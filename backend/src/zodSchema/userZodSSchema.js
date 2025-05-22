@@ -9,7 +9,7 @@ const userZodSchema = z.object({
 })
 export const createRoomAPISchema = z.object({
     roomname: z.string(),
-    role: z.string(),
+    typeOfMessage: z.string(),
     username: z.string()
 })
 

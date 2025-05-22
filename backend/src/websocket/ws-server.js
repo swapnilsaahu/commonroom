@@ -7,15 +7,11 @@ import { createRoomMessage } from "../controllers/messageController.js";
 
 const app = express();
 app.use(cors());
-const httpServer = app.listen(5000, () => {
-    console.log("httpServer running on port 5000");
-});
 
-const rooms = {};
 
-const wss = new WebSocketServer({ server: httpServer });
+const roomStore = {};
 
-const handlUnkownError = (ws) => {
+const handleUnkownError = (ws) => {
     ws.send(JSON.stringify(
         {
             type: 'error',
@@ -23,30 +19,31 @@ const handlUnkownError = (ws) => {
         }
     ));
 }
+export const startWebSocketServer = (httpServer) => {
+    const wss = new WebSocketServer({ server: httpServer });
+    console.log("websocket server running");
+    wss.on('connection', (ws, req) => {
+        console.log("recived msg");
+        const { query } = url.parse(req.url, true);
+        const { typeOfMessage } = query;
+        const connectionMapping = {
+            "create": createRoomMessage
+            //"join": joinRoomMessage,
+            //"broadcastMessage": broadcastMessage
+        }
+        console.log("inside connection in ws", req.url);
+        ws.on('error', console.error);
 
 
+        // Handle messages from the user
+        ws.on("message", (data) => {
+            connectionMapping[typeOfMessage]?.(ws, data, req, roomStore) || handleUnkownError(ws)
+            //createRoomMessage(ws, data, req, rooms)
+        });
 
-wss.on('connection', (ws, req) => {
-
-    const { query } = url.parse(req.url, true);
-    const { typeOfMessage } = query;
-    const connectionMapping = {
-        "create": createRoomMessage,
-        "join": joinRoomMessage,
-        "broadcastMessage": broadcastMessage
-    }
-    console.log("inside connection in ws", req.url);
-    ws.on('error', console.error);
-
-
-    // Handle messages from the user
-    ws.on("message", (data) => {
-        connectionMapping[typeOfMessage]?.(ws, data, req, rooms) || handlUnkownError(ws)
-        //createRoomMessage(ws, data, req, rooms)
+        ws.send('Hello from WebSocket server!');
     });
-
-    ws.send('Hello from WebSocket server!');
-});
+};
 
 
 

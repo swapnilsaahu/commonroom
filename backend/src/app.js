@@ -18,10 +18,10 @@ app.use((req, res, next) => {
 });
 //routes import
 import userRouter from "./routes/userRoutes.js"
-import roomRouter from "./routes/roomRoutes.js";
+//import roomRouter from "./routes/roomRoutes.js";
 
 //routes declaration
 app.use("/api/v1/users", userRouter);
-app.use("/api/v1/room", roomRouter);
+//app.use("/api/v1/room", roomRouter);
 
 export { app };
