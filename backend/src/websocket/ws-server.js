@@ -1,12 +1,8 @@
 
 import url from "url"
 import { WebSocketServer } from "ws";
-import express from "express";
-import cors from "cors";
-import { createRoomMessage } from "../controllers/messageController.js";
+import { createRoomMessage, joinRoomMessage } from "../controllers/messageController.js";
 
-const app = express();
-app.use(cors());
 
 
 const roomStore = {};
@@ -22,23 +18,27 @@ const handleUnkownError = (ws) => {
 export const startWebSocketServer = (httpServer) => {
     const wss = new WebSocketServer({ server: httpServer });
     console.log("websocket server running");
-    wss.on('connection', (ws, req) => {
+    wss.on('connection', (ws) => {
         console.log("recived msg");
-        const { query } = url.parse(req.url, true);
-        const { typeOfMessage } = query;
+        //const { query } = url.parse(req.url, true);
+        //const { typeOfMessage } = query;
         const connectionMapping = {
-            "create": createRoomMessage
-            //"join": joinRoomMessage,
+            "create": createRoomMessage,
+            "join": joinRoomMessage,
             //"broadcastMessage": broadcastMessage
         }
-        console.log("inside connection in ws", req.url);
+        //console.log("inside connection in ws", req.url);
         ws.on('error', console.error);
 
 
         // Handle messages from the user
         ws.on("message", (data) => {
-            connectionMapping[typeOfMessage]?.(ws, data, req, roomStore) || handleUnkownError(ws)
             //createRoomMessage(ws, data, req, rooms)
+            const msg = JSON.parse(data);
+            const { type } = msg;
+
+            console.log(type);
+            connectionMapping[type]?.(ws, msg, roomStore) || handleUnkownError(ws)
         });
 
         ws.send('Hello from WebSocket server!');

@@ -1,7 +1,4 @@
 import url from "url";
-import { WebSocketServer } from "ws";
-import { v4 as uuidv4 } from 'uuid';
-//import { roomStore } from "./roomController";
 
 const randomId = () => {
     return Math.random().toString(36).substring(2, 10);
@@ -30,7 +27,7 @@ const getId = (object) => {
     return id;
 }
 
-const addUsersToRoom = (roomStore, roomId, username, roomname, ws) => {
+const addUsersToRoom = (roomStore, roomId, username, ws, roomname = 'default') => {
     roomStore[roomId] = roomStore[roomId] || {
         users: { users: {}, count: 0 },
         roomname: roomname,
@@ -52,29 +49,25 @@ const addUsersToRoom = (roomStore, roomId, username, roomname, ws) => {
        }
    }
    
-       // Ensure users structure exists
-       //roomStore[roomId].users = roomStore[roomId].users || { users: {}, count: 0 };
-       //roomStore[roomId].users.users = roomStore[roomId].users.users || {};
    */
     // Add user
     roomStore[roomId].users.users[username] = ws;
     roomStore[roomId].users.count = Object.keys(roomStore[roomId].users.users).length;
 }
 
-const createRoomMessage = (ws, data, req, roomStore) => {
-    const { query } = url.parse(req.url, true);
-    const { username } = query;
-    //console.log(roomUUID);
+const createRoomMessage = (ws, data, roomStore) => {
+    //const { query } = url.parse(req.url, true);
+    //const { username } = query;
+    const { username, roomname } = data;
     if (!username) {
         ws.close(1008, "Missing required query parameters."); //1008 because it recived wrong inputs policy violations and closes the ws
         return;
     }
-    const { roomname, typeOfMessage } = query;
-    console.log("typeOfMessage", typeOfMessage);
-    console.log("global varibale stores room info", roomStore);
+    //const { roomname } = query;
+    //console.log("typeOfMessage", typeOfMessage);
     const roomId = getId(roomStore);
 
-    addUsersToRoom(roomStore, roomId, username, roomname, ws);
+    addUsersToRoom(roomStore, roomId, username, ws, roomname);
     // Save user's websocket connection
     roomStore[roomId].users.users[username] = ws;
     console.log(roomStore);
@@ -83,19 +76,33 @@ const createRoomMessage = (ws, data, req, roomStore) => {
     const clients = Object.values(roomStore[roomId].users.users);
     for (const client of clients) {
         if (client.readyState === ws.OPEN) {
-            client.send(`${username},created the room. ${roomId}: roomId, Message from creator: ${data}`);
+            client.send(`${username},created the room. ${roomId}: roomId`);
         }
     }
 }
-/*
-const joinRoomMessage = (ws, data, req, rooms) => {
-    const { query } = url.parse(req.url, true);
-    const { roomId, username } = query;
-    if (!rooms[roomId]) {
 
+const joinRoomMessage = (ws, data, roomStore) => {
+
+    //const { query } = url.parse(req.url, true);
+    const { roomId, username } = data;
+    if (!roomId && !username) {
+        ws.close(1008, "please provide proper details");
+        return;
     };
+
+    addUsersToRoom(roomStore, roomId, username, ws);
+
+    roomStore[roomId].users.users[username] = ws;
+    console.log(roomStore);
+    console.log(`user ${username} joined roomID ${roomId}`);
+    //below gets all the connected clients to the websocket server 
+    const clients = Object.values(roomStore[roomId].users.users);
+    for (const client of clients) {
+        if (client.readyState === ws.OPEN) {
+            client.send(`${username},joined the room. ${roomId}: roomId`);
+        }
+    }
 }
-*/
 export {
-    createRoomMessage
+    createRoomMessage, joinRoomMessage
 }
