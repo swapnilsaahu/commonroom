@@ -66,10 +66,9 @@ const createRoomMessage = (ws, data, roomStore) => {
     //const { roomname } = query;
     //console.log("typeOfMessage", typeOfMessage);
     const roomId = getId(roomStore);
-
     addUsersToRoom(roomStore, roomId, username, ws, roomname);
     // Save user's websocket connection
-    roomStore[roomId].users.users[username] = ws;
+    //roomStore[roomId].users.users[username] = ws;
     console.log(roomStore);
     console.log(`Creator ${username} created roomID ${roomId}`);
     //below gets all the connected clients to the websocket server 
@@ -92,7 +91,7 @@ const joinRoomMessage = (ws, data, roomStore) => {
 
     addUsersToRoom(roomStore, roomId, username, ws);
 
-    roomStore[roomId].users.users[username] = ws;
+    //roomStore[roomId].users.users[username] = ws;
     console.log(roomStore);
     console.log(`user ${username} joined roomID ${roomId}`);
     //below gets all the connected clients to the websocket server 
@@ -103,6 +102,19 @@ const joinRoomMessage = (ws, data, roomStore) => {
         }
     }
 }
+
+
+const sendRoomMessage = (ws, data, roomStore) => {
+    const { message, username, roomId } = data;
+    roomStore[roomId]["messages"].push(message);
+    console.log("inside sendRoomMessage", roomStore[roomId]);
+    const clients = Object.values(roomStore[roomId].users.users);
+    for (const client of clients) {
+        if (client !== ws && client.readyState === ws.OPEN) {
+            client.send(message);
+        }
+    }
+}
 export {
-    createRoomMessage, joinRoomMessage
+    createRoomMessage, joinRoomMessage, sendRoomMessage
 }

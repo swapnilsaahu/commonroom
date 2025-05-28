@@ -1,7 +1,7 @@
 
 import url from "url"
 import { WebSocketServer } from "ws";
-import { createRoomMessage, joinRoomMessage } from "../controllers/messageController.js";
+import { createRoomMessage, joinRoomMessage, sendRoomMessage } from "../controllers/messageController.js";
 
 
 
@@ -25,7 +25,7 @@ export const startWebSocketServer = (httpServer) => {
         const connectionMapping = {
             "create": createRoomMessage,
             "join": joinRoomMessage,
-            //"broadcastMessage": broadcastMessage
+            "sendMessage": sendRoomMessage
         }
         //console.log("inside connection in ws", req.url);
         ws.on('error', console.error);

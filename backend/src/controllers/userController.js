@@ -84,6 +84,7 @@ const loginUser = asyncHandler(async (req, res) => {
     const userExists = await User.findOne({ username: username });
     console.log(userExists);
     if (!userExists) {
+        console.log("user doesnt exist");
         throw new ApiError(404, "User not found");
     }
 
@@ -98,8 +99,8 @@ const loginUser = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .cookie("accessToken", accessToken, { httpOnly: true, secure: true })
-        .cookie("refreshToken", refreshToken, { httpOnly: true, secure: true })
+        .cookie("accessToken", accessToken, { httpOnly: true, secure: false, sameSite: 'Lax' })
+        .cookie("refreshToken", refreshToken, { httpOnly: true, secure: false, sameSite: 'Lax' })
         .json(
             new ApiResponse(200, {
                 "refreshToken": refreshToken,
