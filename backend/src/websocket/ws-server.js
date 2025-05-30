@@ -34,11 +34,21 @@ export const startWebSocketServer = (httpServer) => {
         // Handle messages from the user
         ws.on("message", (data) => {
             //createRoomMessage(ws, data, req, rooms)
-            const msg = JSON.parse(data);
-            const { type } = msg;
-
-            console.log(type);
-            connectionMapping[type]?.(ws, msg, roomStore) || handleUnkownError(ws)
+            try {
+                const msg = JSON.parse(data);
+                const { type } = msg;
+                console.log(type);
+                const handler = connectionMapping[type]
+                if (handler) {
+                    handler(ws, msg, roomStore);
+                }
+                else {
+                    handleUnkownError(ws);
+                }
+            }
+            catch (error) {
+                handleUnkownError(ws);
+            }
         });
 
         ws.send('Hello from WebSocket server!');

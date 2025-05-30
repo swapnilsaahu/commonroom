@@ -13,16 +13,17 @@ export const verifyJWT = asyncHandler(async (req, _, next) => {
         }
 
         const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
-
+        console.log("controlling reaching middleware");
+        //find user in db by id and in the returned mongodb document remove pass,refreshtoken for safety
         const user = await User.findById(decodedToken?._id).select("-password -refreshToken")
 
         if (!user) {
 
             throw new ApiError(401, "Invalid Access Token")
         }
-
+        //storing user document so that it can be passed on to next fxn to use it
         req.user = user;
-        next()
+        next();
     } catch (error) {
         throw new ApiError(401, error?.message || "Invalid access token")
     }

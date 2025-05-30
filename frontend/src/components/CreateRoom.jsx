@@ -1,37 +1,32 @@
-import { useState } from "react";
-import axios from 'axios';
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { useWSConnection } from "../contexts/WSContext";
 const CreateRoom = () => {
     const [roomname, setroomname] = useState('');
-    const [username, setusername] = useState('swapnil');
     const [roomCode, setRoomCode] = useState('');
+    const { username } = useAuth();
+    const { sendMessage, roomData } = useWSConnection();
+    const navigate = useNavigate();
     const storeRoomName = (event) => {
         console.log(event.target.value);
         setroomname(event.target.value);
     }
     const sendCreateReq = async () => {
-        //const url = 'http://localhost:3000/api/v1/room/createRoomAPI';
-        try {
-            if (username) {
-                console.log("roomname", roomname, "username", username);
-                const ws = new WebSocket(`ws://localhost:3000/?username=${username}&roomname=${roomname}&typeOfMessage=create`);
-
-                ws.onerror = (err) => {
-                    console.error("some error connecting to ws server", err);
-                }
-                ws.onopen = () => {
-                    ws.send("hi from the user");
-                };
-                ws.onmessage = (data) => {
-                    console.log('recived: ', data);
-                };
-            }
-
-
-        }
-        catch (error) {
-            console.error("error posting data", error);
-        }
+        sendMessage({
+            type: "create",
+            username: username,
+            roomname: roomname
+        });
     }
+    useEffect(() => {
+        if (roomData?.success) {
+            navigate('/room');
+        }
+        if (roomData?.roomId) {
+            setRoomCode(roomData.roomId)
+        }
+    }, [roomData, navigate]);
     return (
         <div>
             <input type="text" name="RoomName" onChange={storeRoomName}></input>

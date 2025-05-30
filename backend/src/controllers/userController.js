@@ -3,10 +3,6 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/userModelDB.js";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import mongoose from "mongoose";
-import zod from "zod";
-//import { userZodSchema } from "../zodSchema/userZodSSchema.js";
 import { signupSchema, loginSchema } from "../zodSchema/userZodSSchema.js";
 
 
@@ -96,19 +92,30 @@ const loginUser = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Password is wrong");
     }
     const { accessToken, refreshToken } = await createAccessAndRefreshToken(userExists);
-
+    //set cookies in user browser cookies are better way to store jwt token both in cookies it can autmatically send the token here using secure false during development,sameSite lax indicates that it allows for cross site request so that cookies can be transferred btw differnt port 
     return res
         .status(200)
         .cookie("accessToken", accessToken, { httpOnly: true, secure: false, sameSite: 'Lax' })
         .cookie("refreshToken", refreshToken, { httpOnly: true, secure: false, sameSite: 'Lax' })
         .json(
             new ApiResponse(200, {
+                "username": username,
                 "refreshToken": refreshToken,
                 "accessToken": accessToken
             }, "user logged in")
         )
 })
+//verify user endpoint for frontend to check whether user already logged in or not by checking there coookies and its expiration 
+const verifyUser = asyncHandler((req, res) => {
+    console.log("control reaching here inside verifyuser backend");
+    return res.status(200).json(
+        new ApiResponse(200, {
+            "username": req.user.username
+        }, "verified user")
+    )
+})
 export {
     registerUser,
-    loginUser
+    loginUser,
+    verifyUser
 }

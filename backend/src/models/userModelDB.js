@@ -28,6 +28,7 @@ const userSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
+// Hash the password only if it has been modified before saving the document
 userSchema.pre("save", async function(next) {
     if (!this.isModified("password")) return next();
 

@@ -15,10 +15,10 @@ app.use(express.static("public"));
 app.use(cookieParser());
 
 
-app.use((req, res, next) => {
-    console.log("BODY MIDDLEWARE CHECK:", req.method, req.url, req.headers['content-type']);
-    next();
-});
+//app.use((req, res, next) => {
+//    console.log("BODY MIDDLEWARE CHECK:", req.method, req.url, req.headers['content-type']);
+//   next();
+//});
 //routes import
 import userRouter from "./routes/userRoutes.js"
 //import roomRouter from "./routes/roomRoutes.js";

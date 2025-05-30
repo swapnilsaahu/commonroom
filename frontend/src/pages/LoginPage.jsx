@@ -1,44 +1,98 @@
-import { useState } from "react";
-import { loginFetch } from "../services/usersApi";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext.jsx";
+
 
 const LoginPage = () => {
-    const [loginData, setlogindata] = useState({});
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const { handleLogin, isAuthenticated } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
 
-    const handleLogin = async () => {
+    // redirect when user is already authenticated
+    useEffect(() => {
+        if (isAuthenticated) {
+            const from = location.state?.from?.pathname || '/dashboard';
+            navigate(from, { replace: true });
+        }
+    }, [isAuthenticated, navigate, location]);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault(); // Prevent form submission if used in a form
+        setError('');
+        setIsLoading(true);
+
         try {
-            const response = await loginFetch(loginData);
-
-            if (response.status === 200) {
-                navigate("/dashboard");
+            const result = await handleLogin(username, password);
+            if (result.success) {
+                // Navigation will be handled by useEffect when isAuthenticated changes
+                console.log("successfull");
             } else {
-                console.error("Login failed:", response.data);
+                setError(result.error || 'Login failed. Please try again.');
             }
         } catch (err) {
-            console.error("Login failed", err);
+            setError('An unexpected error occurred. Please try again.');
+        } finally {
+            setIsLoading(false);
         }
     };
+
+    // Don't render the form if user is already authenticated
+    if (isAuthenticated) {
+        return null;
+    }
+
     return (
         <div className="min-h-screen w-full px-4 py-6 flex justify-center items-center bg-black overflow-x-hidden">
             <div className="w-full max-w-md flex flex-col gap-4 text-white">
                 <h2 className="text-4xl text-center">StudyHub</h2>
                 <h3 className="text-xl text-center">Login</h3>
 
-                <input type="text" name="username" placeholder="Username" className="bg-gray-800 border border-gray-600 rounded-lg p-2 w-full" onChange={(e) => setlogindata(prev => ({ ...prev, username: e.target.value }))} />
-                <input type="password" name="password" placeholder="Password" className="bg-gray-800 border border-gray-600 rounded-lg p-2 w-full" onChange={(e) => setlogindata(prev => ({ ...prev, password: e.target.value }))} />
+                {error && (
+                    <div className="bg-red-900 border border-red-700 text-red-100 px-4 py-2 rounded-lg text-sm">
+                        {error}
+                    </div>
+                )}
 
-                < button className="text-gray-900 bg-amber-50 py-3 rounded-xl w-full" onClick={handleLogin}>Login</button>
+                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                    <input
+                        type="text"
+                        name="username"
+                        placeholder="Username"
+                        className="bg-gray-800 border border-gray-600 rounded-lg p-2 w-full"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        disabled={isLoading}
+                        required
+                    />
+                    <input
+                        type="password"
+                        name="password"
+                        placeholder="Password"
+                        className="bg-gray-800 border border-gray-600 rounded-lg p-2 w-full"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        disabled={isLoading}
+                        required
+                    />
+                    <button
+                        type="submit"
+                        className="text-gray-900 bg-amber-50 py-3 rounded-xl w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={isLoading || !username || !password}
+                    >
+                        {isLoading ? 'Logging in...' : 'Login'}
+                    </button>
+                </form>
 
                 <p className="text-gray-500 text-center text-sm">
-                    Don't have an account? <a className="underline cursor-pointer">Sign up
-                    </a>
+                    Don't have an account? <a className="underline cursor-pointer">Sign up</a>
                 </p>
             </div>
-        </div >
+        </div>
     );
 };
 
 export default LoginPage;
-
-

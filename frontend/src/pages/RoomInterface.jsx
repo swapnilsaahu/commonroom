@@ -1,31 +1,33 @@
 import NavBar from "../components/NavBar";
 import { IoMdSend } from "react-icons/io";
-
+import { useWSConnection } from "../contexts/WSContext";
 const RoomInterface = () => {
+    const { roomData } = useWSConnection();
     return (
-        <div className="h-screen flex">
-
-            <section className="bg-indigo-500 basis-1/5">
+        <div className="h-screen grid grid-cols-3">
+            <div className="col-start-1 col-end-4 h-fit">
+                <h2>top bar for vc and stuff</h2>
+            </div>
+            <div className="bg-indigo-500 max-w-full col-start-1 col-end-2">
                 <div className="bg-indigo-500">
                     <h2>hello</h2>
+                    <p>{roomData.roomname}</p>
+                    <p>{roomData.roomId}</p>
                 </div>
-            </section>
-            <section className="basis-2/3">
-                <div>
+            </div>
+            <div className="col-start-2 col-end-3 h-screen">
 
-                </div>
-                <div className=" w-full fixed bottom-0 max-w-md flex text-base p-4 border text-gray-900 bg-green-600">
+                <div className="w-full text-base p-4 border text-gray-900 bg-green-600 fixed bottom-0">
                     <input type="text" name="entermessage" className="w-full text-sm p-2  border rounded"></input>
                     <div>
                         <IoMdSend />
                     </div>
                 </div>
-            </section>
-            <section className="bg-red-500 basis-1/5
-                ">
-                <h2>sdhfjsdhfj</h2>
-            </section>
-        </div>
+            </div>
+            <div className="bg-red-500 col-start-3 col-end-4" >
+                <h2></h2>
+            </div>
+        </div >
     )
 }
 

@@ -1,9 +1,8 @@
-import url from "url";
-
+//gets random number converts them to base 36 and slice the string to remove decimal and make it short
 const randomId = () => {
     return Math.random().toString(36).substring(2, 10);
 }
-
+//checkid in roomstore to see if user already exists object here is roomstore with all details
 const checkId = (id, object) => {
     for (const key in object) {
         if (key === id) {
@@ -12,7 +11,7 @@ const checkId = (id, object) => {
     }
     return true;
 };
-
+//does 100 attempt to generate unique id for a room 
 const getId = (object) => {
     const limit = 100;
     let attempt = 0;
@@ -28,6 +27,7 @@ const getId = (object) => {
 }
 
 const addUsersToRoom = (roomStore, roomId, username, ws, roomname = 'default') => {
+    //if room already exists used to add members for join if not creates a new room for creation  
     roomStore[roomId] = roomStore[roomId] || {
         users: { users: {}, count: 0 },
         roomname: roomname,
@@ -55,8 +55,9 @@ const addUsersToRoom = (roomStore, roomId, username, ws, roomname = 'default') =
     roomStore[roomId].users.count = Object.keys(roomStore[roomId].users.users).length;
 }
 
-const createRoomMessage = (ws, data, roomStore) => {
+const createRoomMessage = async (ws, data, roomStore) => {
     //const { query } = url.parse(req.url, true);
+    //was trying query way but realised there are easy ways to send info in websocket
     //const { username } = query;
     const { username, roomname } = data;
     if (!username) {
@@ -65,7 +66,7 @@ const createRoomMessage = (ws, data, roomStore) => {
     }
     //const { roomname } = query;
     //console.log("typeOfMessage", typeOfMessage);
-    const roomId = getId(roomStore);
+    const roomId = getId(roomStore); //random unique import {} from 'module'
     addUsersToRoom(roomStore, roomId, username, ws, roomname);
     // Save user's websocket connection
     //roomStore[roomId].users.users[username] = ws;
@@ -75,7 +76,13 @@ const createRoomMessage = (ws, data, roomStore) => {
     const clients = Object.values(roomStore[roomId].users.users);
     for (const client of clients) {
         if (client.readyState === ws.OPEN) {
-            client.send(`${username},created the room. ${roomId}: roomId`);
+            client.send(JSON.stringify({
+                success: true,
+                roomId: roomId,
+                type: "created",
+                roomname: roomname,
+                msg: "room created successfully"
+            }));
         }
     }
 }
@@ -98,7 +105,7 @@ const joinRoomMessage = (ws, data, roomStore) => {
     const clients = Object.values(roomStore[roomId].users.users);
     for (const client of clients) {
         if (client.readyState === ws.OPEN) {
-            client.send(`${username},joined the room. ${roomId}: roomId`);
+            client.send(`${username}, joined the room.${roomId}: roomId`);
         }
     }
 }
