@@ -1,33 +1,58 @@
 import NavBar from "../components/NavBar";
 import { IoMdSend } from "react-icons/io";
 import { useWSConnection } from "../contexts/WSContext";
+import { useAuth } from "../contexts/AuthContext.jsx"
+import { useState } from "react";
+import SendMessageBar from "../components/SendMessageBar.jsx";
+import MessageDisplay from "../components/MessageDisplay.jsx";
 const RoomInterface = () => {
-    const { roomData } = useWSConnection();
-    return (
-        <div className="h-screen grid grid-cols-3">
-            <div className="col-start-1 col-end-4 h-fit">
-                <h2>top bar for vc and stuff</h2>
-            </div>
-            <div className="bg-indigo-500 max-w-full col-start-1 col-end-2">
-                <div className="bg-indigo-500">
-                    <h2>hello</h2>
-                    <p>{roomData.roomname}</p>
-                    <p>{roomData.roomId}</p>
-                </div>
-            </div>
-            <div className="col-start-2 col-end-3 h-screen">
+    const [currentMessage, setCurrentMsg] = useState('');
+    const [messages, setRoomMessages] = useState([]);
+    const { sendMessage, roomData } = useWSConnection();
+    const { username } = useAuth();
+    const setMessageValue = (value) => {
+        setCurrentMsg(value);
+    }
+    const handleSendMessage = () => {
+        const msgObject = {
+            type: "sendMessage",
+            roomId: roomData.roomId,
+            username: username,
+            message: currentMessage,
+            roomname: roomData.roomname,
+            timestamp: + new Date(),
+            id: Date.now()
+        }
 
-                <div className="w-full text-base p-4 border text-gray-900 bg-green-600 fixed bottom-0">
-                    <input type="text" name="entermessage" className="w-full text-sm p-2  border rounded"></input>
-                    <div>
-                        <IoMdSend />
-                    </div>
+        setRoomMessages(prevMessages => [
+            ...prevMessages, msgObject
+        ]);
+        sendMessage(msgObject);
+        console.log(messages);
+        setCurrentMsg('');
+    }
+    return (
+        <div className="h-screen overflow-hidden flex flex-col">
+            <header className="w-full bg-blue-600 text-white text-center p-2 text-xl ">
+                topbar
+            </header>
+            <main className="flex flex-1">
+                <div className="bg-gray-100 flex-[1]">
+                    col 1
                 </div>
-            </div>
-            <div className="bg-red-500 col-start-3 col-end-4" >
-                <h2></h2>
-            </div>
-        </div >
+                <div className="bg-gray-200 flex-[3] flex flex-col relative border">
+                    col 2
+                    <div className="overflow-y-auto flex-1">
+                        <MessageDisplay messages={messages} />
+                    </div>
+                    <SendMessageBar handleSendMessage={handleSendMessage} setMessageValue={setMessageValue} currentMessage={currentMessage} />
+
+                </div>
+                <div className="bg-gray-300 flex-[1]">
+                    col 3
+                </div>
+            </main>
+        </div>
     )
 }
 
