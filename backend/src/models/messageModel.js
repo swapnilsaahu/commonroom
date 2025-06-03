@@ -1,4 +1,4 @@
-const { default: mongoose, Schema } = require("mongoose");
+import mongoose from "mongoose";
 
 const messageSchema = new mongoose.Schema({
     id: {
@@ -7,13 +7,13 @@ const messageSchema = new mongoose.Schema({
         unique: true
     },
     roomId: {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'Rooms',
         required: true,
         unique: true
     },
     username: {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         required: true,
         unique: true
     },

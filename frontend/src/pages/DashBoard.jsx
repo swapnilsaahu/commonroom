@@ -8,6 +8,9 @@ const DashBoard = () => {
     const createRoomHandle = async () => {
         navigate('/createroom');
     }
+    const joinRoomHandle = async () => {
+        navigate('/joinroom');
+    }
     return (
         <div className="h-screen bg-black text-white" >
 
@@ -15,7 +18,7 @@ const DashBoard = () => {
             <div className="flex text-black flex-col items-center justify-center gap-2">
                 <h1 className="bg-white">username:{username}</h1>
                 <button type="button" className="bg-white text-2xl p-2 " onClick={createRoomHandle}>Create Server</button>
-                <button type="button" className="bg-white text-2xl p-3">Join server</button>
+                <button type="button" onClick={joinRoomHandle} className="bg-white text-2xl p-3">Join server</button>
             </div>
         </div >
     )

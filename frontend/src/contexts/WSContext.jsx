@@ -15,6 +15,7 @@ export const useWSConnection = () => {
 export const WSContextProvider = ({ children }) => {
     const [wsConnectionObject, setWSConnectionObject] = useState();
     const [roomData, setroomData] = useState();
+    const [messages, setRoomMessages] = useState([]);
     useEffect(() => {
 
         const ws = new WebSocket('ws://localhost:3000');
@@ -31,6 +32,12 @@ export const WSContextProvider = ({ children }) => {
             switch (type) {
                 case 'created':
                     setroomData(data);
+                    break;
+                case 'joined':
+                    setroomData(data);
+                    break;
+                case 'onmessage':
+                    setRoomMessages((prevMessages) => [...prevMessages, data]);
                     break;
                 default:
                     setroomData(data);
@@ -52,7 +59,8 @@ export const WSContextProvider = ({ children }) => {
     const value = {
         wsConnectionObject,
         sendMessage,
-        roomData
+        roomData,
+        messages
     }
     return (
         <wsContext.Provider value={value}>

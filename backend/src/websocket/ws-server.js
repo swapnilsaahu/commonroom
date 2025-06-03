@@ -1,6 +1,7 @@
 
 import { WebSocketServer } from "ws";
-import { createRoomMessage, joinRoomMessage, sendRoomMessage } from "../websocket/roomHandler.js";
+import { createRoomMessage, joinRoomMessage } from "../websocket/roomHandler.js";
+import { sendRoomMessage } from "../websocket/messageHandler.js";
 
 
 
@@ -36,7 +37,7 @@ export const startWebSocketServer = (httpServer) => {
             try {
                 const msg = JSON.parse(data);
                 const { type } = msg;
-                console.log(type);
+                console.log(type, "on message");
                 const handler = connectionMapping[type]
                 if (handler) {
                     handler(ws, msg, roomStore);

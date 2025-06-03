@@ -7,8 +7,7 @@ import SendMessageBar from "../components/SendMessageBar.jsx";
 import MessageDisplay from "../components/MessageDisplay.jsx";
 const RoomInterface = () => {
     const [currentMessage, setCurrentMsg] = useState('');
-    const [messages, setRoomMessages] = useState([]);
-    const { sendMessage, roomData } = useWSConnection();
+    const { sendMessage, roomData, messages } = useWSConnection();
     const { username } = useAuth();
 
     const messagesEndRef = useRef(null);
@@ -28,20 +27,16 @@ const RoomInterface = () => {
             id: Date.now()
         }
 
-        setRoomMessages(prevMessages => [
-            ...prevMessages, msgObject
-        ]);
         sendMessage(msgObject);
-        console.log(messages);
         setCurrentMsg('');
     }
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
-
     useEffect(() => {
         scrollToBottom();
+
     }, [messages]);
     return (
         <div className="h-screen flex flex-col">

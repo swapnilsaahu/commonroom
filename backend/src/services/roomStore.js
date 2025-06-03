@@ -54,33 +54,12 @@ const getUsersInRoom = async (roomId) => {
     const userListKey = `${getRoomKey(roomId)}:users`;
     return await client.lRange(userListKey, 0, -1);
 }
-const addMessage = async (roomId, message) => {
-    const client = getClient();
-    const messageListKey = `${getRoomKey(roomId)}:messages`;
-
-    // add message to the start of the list
-    await client.lPush(messageListKey, JSON.stringify(message));
-
-    // trim the list to only the last 10 messages
-    await client.lTrim(messageListKey, 0, 9); // Keeps only first 10 items (most recent)
-
-    return message;
-};
-
-const getMessages = async (roomId) => {
-    const client = getClient();
-    const messageListKey = `${getRoomKey(roomId)}:messages`;
-
-    const messages = await client.lRange(messageListKey, 0, -1); // Get all messages
-    return messages.map(msg => JSON.parse(msg)); // Parse each stringified message
-};
 
 
 export {
+    getRoomKey,
     createOrGetRoomRedis,
     getRoom,
     addUserToRoomRedis,
     getUsersInRoom,
-    addMessage,
-    getMessages
 }

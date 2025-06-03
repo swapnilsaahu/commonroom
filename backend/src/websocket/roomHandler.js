@@ -33,7 +33,6 @@ const createRoom = async (roomStore, roomId, roomname) => {
     roomStore[roomId] = {
         users: {},
         usercount: 0,
-        message: [],
         roomname: roomname,
         createdAt: createdAt
     }
@@ -64,7 +63,7 @@ const createRoomMessage = async (ws, data, roomStore) => {
     }
     const roomId = getId(roomStore); //random unique
     try {
-        const resRoomId = await createRoom(roomStore, roomId, username, ws, roomname);
+        const resRoomId = await createRoom(roomStore, roomId, roomname);
         const resUsername = await addUserToRoom(roomStore, roomId, username, ws);
 
 
@@ -100,13 +99,19 @@ const joinRoomMessage = async (ws, data, roomStore) => {
     }
     try {
         const resUsername = await addUserToRoom(roomStore, roomId, username, ws);
-
-        console.log(`user ${resUsername} joined roomID ${roomId}`);
+        if (resUsername) {
+            console.log(`${resUsername} joined the rooom with id: ${roomId}`);
+        }
         //below gets all the connected clients to the websocket server 
         const clients = Object.values(roomStore[roomId].users);
         for (const client of clients) {
             if (client.readyState === ws.OPEN) {
-                client.send(`${username}, joined the room.${roomId}: roomId`);
+                client.send(JSON.stringify({
+                    success: true,
+                    roomId: roomId,
+                    type: "joined",
+                    msg: "user joined successfully"
+                }));
             }
         }
     }
@@ -117,17 +122,6 @@ const joinRoomMessage = async (ws, data, roomStore) => {
 }
 
 
-const sendRoomMessage = (ws, data, roomStore) => {
-    const { message, username, roomId } = data;
-    roomStore[roomId]["messages"].push(message);
-    console.log("inside sendRoomMessage", roomStore[roomId]);
-    const clients = Object.values(roomStore[roomId].users.users);
-    for (const client of clients) {
-        if (client !== ws && client.readyState === ws.OPEN) {
-            client.send(message);
-        }
-    }
-}
 export {
-    createRoomMessage, joinRoomMessage, sendRoomMessage
+    createRoomMessage, joinRoomMessage
 }
