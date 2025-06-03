@@ -1,6 +1,6 @@
 
 import { WebSocketServer } from "ws";
-import { createRoomMessage, joinRoomMessage, sendRoomMessage } from "../controllers/messageController.js";
+import { createRoomMessage, joinRoomMessage, sendRoomMessage } from "../websocket/roomHandler.js";
 
 
 

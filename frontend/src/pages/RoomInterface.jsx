@@ -24,7 +24,7 @@ const RoomInterface = () => {
             username: username,
             message: currentMessage,
             roomname: roomData.roomname,
-            timestamp: + new Date(),
+            timestamp: Date.now(),
             id: Date.now()
         }
 
