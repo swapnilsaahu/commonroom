@@ -1,5 +1,3 @@
-import NavBar from "../components/NavBar";
-import { IoMdSend } from "react-icons/io";
 import { useWSConnection } from "../contexts/WSContext";
 import { useAuth } from "../contexts/AuthContext.jsx"
 import { useState, useEffect, useRef } from "react";
@@ -9,7 +7,7 @@ const RoomInterface = () => {
     const [currentMessage, setCurrentMsg] = useState('');
     const { sendMessage, roomData, messages } = useWSConnection();
     const { username } = useAuth();
-
+    const calledRef = useRef(false); //using useref to avoid duplication in meesages on mount because react on strict mode runs twice a component to check whether it is a pure fx or ont which means that on same input it should provide same output 
     const messagesEndRef = useRef(null);
     const setMessageValue = (value) => {
         setCurrentMsg(value);
@@ -30,7 +28,14 @@ const RoomInterface = () => {
         sendMessage(msgObject);
         setCurrentMsg('');
     }
-
+    const getMessagesOnMount = () => {
+        const msgObject = {
+            type: "onMountMessages",
+            roomId: roomData.roomId,
+            username: username,
+        }
+        sendMessage(msgObject);
+    }
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
@@ -38,6 +43,14 @@ const RoomInterface = () => {
         scrollToBottom();
 
     }, [messages]);
+
+    useEffect(() => {
+        if (calledRef.current) return;
+        calledRef.current = true;
+
+        getMessagesOnMount();
+    }, []);
+    //initially the calledRef is set to false so the getMessagesOnMount runs for first time and sets calledRef to true so that it avoids rerunning on second render useref doesnt rerender on change or update
     return (
         <div className="h-screen flex flex-col">
             <header className="w-full flex-shrink-0 bg-blue-600 text-white text-center p-2 text-xl ">

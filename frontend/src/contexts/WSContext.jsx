@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useRef } from "react";
 import { createContext } from "react";
 import { useContext } from "react";
 
@@ -38,6 +39,9 @@ export const WSContextProvider = ({ children }) => {
                     break;
                 case 'onmessage':
                     setRoomMessages((prevMessages) => [...prevMessages, data]);
+                    break;
+                case 'onMountMessages':
+                    setRoomMessages((prev) => [...prev, ...data.message])
                     break;
                 default:
                     setroomData(data);

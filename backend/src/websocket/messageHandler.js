@@ -35,4 +35,18 @@ const sendRoomMessage = async (ws, data, roomStore) => {
     }
 }
 
-export { sendRoomMessage };
+const getLastNMessagesOnMount = async (ws, data) => {
+    const { roomId, username } = data;
+    const result = await getLastNMessages(roomId);
+    if (ws.readyState === ws.OPEN) {
+        ws.send(JSON.stringify({
+            success: true,
+            message: result,
+            type: "onMountMessages",
+            msg: "messages retrieved on mount successfully",
+            roomId: roomId,
+            username: username
+        }))
+    }
+}
+export { sendRoomMessage, getLastNMessagesOnMount };
