@@ -1,4 +1,4 @@
-import { addUserToRoomRedis, createOrGetRoomRedis } from "../services/roomStore.js";
+import { addUserToRoomRedis, createOrGetRoomRedis, getUsersInRoom } from "../services/roomStore.js";
 
 //gets random number converts them to base 36 and slice the string to remove decimal and make it short
 const randomId = () => {
@@ -122,6 +122,25 @@ const joinRoomMessage = async (ws, data, roomStore) => {
 }
 
 
+
+const getUsers = async (ws, data) => {
+    try {
+        const { roomId } = data;
+        const users = await getUsersInRoom(roomId);
+        if (ws.readyState === ws.OPEN) {
+            ws.send(JSON.stringify({
+                success: true,
+                type: "getUsersInRoom",
+                users: users,
+                roomId: roomId
+            }))
+        }
+    }
+    catch (error) {
+        console.error("error while fetching users", error);
+    }
+}
+
 export {
-    createRoomMessage, joinRoomMessage
+    createRoomMessage, joinRoomMessage, getUsers
 }

@@ -1,15 +1,21 @@
 const MessageDisplay = ({ messages }) => {
     return (
-        <div className="space-y-2">
+        <div className="space-y-3">
             {messages.map((message) => (
-                <div key={message.timestamp || message.id} className="bg-white p-3">
-                    <p className="text-black">{message.message}</p>
-                    <small className="text-gray-500">
-                        {new Date(message.timestamp).toLocaleString()}
-                    </small>
+                <div key={message.timestamp || message.id} className="px-3 py-1">
+                    <div className="flex items-center gap-2 mb-1">
+                        <p className="text-[#3B82F6] font-semibold text-sm">{message.username}</p>
+                        <small className="text-gray-400 text-xs">
+                            {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </small>
+                    </div>
+                    <div className="inline-block max-w-[80%] bg-gradient-to-br from-blue-600 via-blue-500 to-blue-400 text-white text-sm p-3 rounded-xl shadow-sm">
+                        {message.message}
+                    </div>
                 </div>
             ))}
         </div>
+
     )
 }
 

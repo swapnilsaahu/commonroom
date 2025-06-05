@@ -19,8 +19,8 @@ function App() {
                 <WSContextProvider>
                     <div className=''>
                         <Routes>
-                            <Route path='/signup' element={<RegisterPage />} />
                             <Route path='/login' element={<LoginPage />} />
+                            <Route path='/signup' element={<RegisterPage />} />
                             <Route element={<ProtectedRoutes />}>
                                 <Route path='/' element={<LandingPage />} />
                                 <Route path='/dashboard' element={<DashBoard />} />

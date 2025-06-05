@@ -4,18 +4,14 @@ const messageSchema = new mongoose.Schema({
     id: {
         type: Number,
         required: true,
-        unique: true
     },
     roomId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Rooms',
+        type: String,
         required: true,
-        unique: true
     },
     username: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: String,
         required: true,
-        unique: true
     },
     timestamp: {
         type: Number,

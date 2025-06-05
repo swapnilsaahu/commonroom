@@ -1,8 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signupFetch } from "../services/usersApi";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 const RegisterPage = () => {
     const [userData, setUserData] = useState({});
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { isAuthenticated } = useAuth();
+    useEffect(() => {
+        if (isAuthenticated) {
+            const from = location.state?.from?.pathname || '/dashboard';
+            navigate(from, { replace: true });
+        }
+    }, [isAuthenticated, navigate, location]);
     return (
         <div className="min-h-screen w-full px-4 py-6 flex justify-center items-center bg-black overflow-x-hidden">
             <div className="w-full max-w-md flex flex-col gap-4 text-white">

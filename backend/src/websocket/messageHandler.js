@@ -49,4 +49,30 @@ const getLastNMessagesOnMount = async (ws, data) => {
         }))
     }
 }
-export { sendRoomMessage, getLastNMessagesOnMount };
+
+const getOlderMessages = async (ws, data) => {
+    try {
+        const { roomId, lastTimestampBeforeOldMessages } = data;
+        const query = lastTimestampBeforeOldMessages ? { timestamp: { $lt: lastTimestampBeforeOldMessages } } : {};
+
+        const olderMessages = await Message.find(query)
+            .sort({ timestamp: -1 })
+            .limit(20)
+
+        olderMessages.reverse();
+
+        if (ws.readyState === ws.OPEN) {
+            ws.send(JSON.stringify({
+                roomId: roomId,
+                messages: olderMessages,
+                type: "olderMessages",
+                msg: "retrieved sucessfully",
+                success: true
+            }))
+        }
+    }
+    catch (error) {
+        console.error("error while retreiving messages", error);
+    }
+}
+export { sendRoomMessage, getLastNMessagesOnMount, getOlderMessages };

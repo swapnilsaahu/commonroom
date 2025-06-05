@@ -17,6 +17,7 @@ export const WSContextProvider = ({ children }) => {
     const [wsConnectionObject, setWSConnectionObject] = useState();
     const [roomData, setroomData] = useState();
     const [messages, setRoomMessages] = useState([]);
+    const [users, setUsersInRoom] = useState([]);
     useEffect(() => {
 
         const ws = new WebSocket('ws://localhost:3000');
@@ -43,6 +44,9 @@ export const WSContextProvider = ({ children }) => {
                 case 'onMountMessages':
                     setRoomMessages((prev) => [...prev, ...data.message])
                     break;
+                case 'getUsersInRoom':
+                    setUsersInRoom((prev) => [...prev, ...data.users])
+                    break;
                 default:
                     setroomData(data);
             }
@@ -64,7 +68,8 @@ export const WSContextProvider = ({ children }) => {
         wsConnectionObject,
         sendMessage,
         roomData,
-        messages
+        messages,
+        users
     }
     return (
         <wsContext.Provider value={value}>
