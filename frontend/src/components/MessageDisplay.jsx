@@ -9,7 +9,7 @@ const MessageDisplay = ({ messages }) => {
                             {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </small>
                     </div>
-                    <div className="inline-block max-w-[80%] bg-gradient-to-br from-blue-600 via-blue-500 to-blue-400 text-white text-sm p-3 rounded-xl shadow-sm">
+                    <div className="inline-block max-w-[80%] bg-white text-black text-sm p-3 rounded-xl shadow-sm">
                         {message.message}
                     </div>
                 </div>

@@ -11,8 +11,6 @@ import ProtectedRoutes from './utils/ProtectedRoutes.jsx'
 import { AuthProvider } from './contexts/AuthContext.jsx'
 import { WSContextProvider } from './contexts/WSContext.jsx'
 import JoinRoom from './components/JoinRoom.jsx'
-import TestComponent from "./components/TestComponent.jsx"
-import FeatureSection from './components/TestComponent.jsx'
 
 function App() {
     return (
