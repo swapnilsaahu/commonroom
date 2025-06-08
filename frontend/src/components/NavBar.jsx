@@ -3,20 +3,27 @@ import { NavLink } from 'react-router-dom'
 
 const NavBar = () => {
     return (
-        <nav className='fixed top-0 left-0 w-full text-2xl text-white flex items-center justify-end-safe space-x-4 pt-2 pr-4'>
-            <div>
-                <NavLink to="/">Home</NavLink>
+        <nav className='fixed w-full top-0 shadow flex justify-between items-center px-6 py-4 z-50 bg-white gap-10'>
+            <div className='text-xl font-semibold'>
+                <NavLink to="/">commonroom</NavLink>
             </div>
-            <div>
-                <NavLink to="/signup">Register</NavLink>
+            <div className='flex gap-4'>
+                <div className=''>
+                    <NavLink
+                        to="/signup"
+                        className="px-4 py-2 rounded hover:bg-gray-100 transition"
+                    >
+                        Get Started</NavLink>
+                </div>
+                <div className='mt-3 md:mt-0'>
+                    <NavLink
+                        to="/login"
+                        className="px-4 py-2 rounded hover:bg-gray-100 transition"
+                    >
+                        Login</NavLink>
+                </div>
             </div>
-            <div>
-                <NavLink to="/login">Login</NavLink>
-            </div>
-
-
-
-        </nav>
+        </nav >
     )
 }
 

@@ -1,4 +1,4 @@
-import { addUserToRoomRedis, createOrGetRoomRedis, getUsersInRoom } from "../services/roomStore.js";
+import { addUserToRoomRedis, createOrGetRoomRedis, getRoom, getUsersInRoom } from "../services/roomStore.js";
 
 //gets random number converts them to base 36 and slice the string to remove decimal and make it short
 const randomId = () => {
@@ -43,9 +43,7 @@ const createRoom = async (roomStore, roomId, roomname) => {
 }
 const addUserToRoom = async (roomStore, roomId, username, ws) => {
     //if room already exists to add members for join 
-    if (!roomStore[roomId]) {
-        throw new Error(`Room ${roomId} does not exist`);
-    }
+
     roomStore[roomId].users[username] = ws;
     const userCount = Object.keys(roomStore[roomId].users).length;
     roomStore[roomId].usercount = userCount;
@@ -93,9 +91,17 @@ const joinRoomMessage = async (ws, data, roomStore) => {
         ws.close(1008, "please provide proper details");
         return;
     };
-    if (!roomStore[roomId]) {
+    const roomExists = getRoom(roomId);
+    if (!roomStore[roomId] && !roomExists) {
+        //check in redis if room exists or not 
         ws.close(1008, "Room does not exist");
         return;
+    }
+    if (!roomStore[roomId]) {
+        roomStore[roomId] = {
+            users: {},
+            usercount: 0,
+        }
     }
     try {
         const resUsername = await addUserToRoom(roomStore, roomId, username, ws);
@@ -140,6 +146,7 @@ const getUsers = async (ws, data) => {
         console.error("error while fetching users", error);
     }
 }
+
 
 export {
     createRoomMessage, joinRoomMessage, getUsers

@@ -18,13 +18,23 @@ export const WSContextProvider = ({ children }) => {
     const [roomData, setroomData] = useState();
     const [messages, setRoomMessages] = useState([]);
     const [users, setUsersInRoom] = useState([]);
+
+
     useEffect(() => {
 
         const ws = new WebSocket('ws://localhost:3000');
+        setWSConnectionObject(ws);
 
         ws.onopen = () => {
             console.log("Connected");
             console.log(ws);
+            const roomDataFromLocalStorage = JSON.parse(localStorage.getItem('roomData'))
+            const reconnectToRoomObj = {
+                type: "join",
+                roomId: roomDataFromLocalStorage.roomId,
+                username: roomDataFromLocalStorage.username
+            }
+            sendMessage(reconnectToRoomObj);
         }
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
@@ -34,10 +44,13 @@ export const WSContextProvider = ({ children }) => {
             switch (type) {
                 case 'created':
                     setroomData(data);
+                    localStorage.setItem('roomData', JSON.stringify(data));
                     break;
-                case 'joined':
+                case 'joined': {
                     setroomData(data);
+                    localStorage.setItem('roomData', JSON.stringify(data));
                     break;
+                }
                 case 'onmessage':
                     setRoomMessages((prevMessages) => [...prevMessages, data]);
                     break;
@@ -56,7 +69,8 @@ export const WSContextProvider = ({ children }) => {
             console.error("Error connecting to WS", error);
         };
 
-        setWSConnectionObject(ws);
+        const roomDataLocalStorage = JSON.parse(localStorage.getItem('roomData'))
+        setroomData(roomDataLocalStorage);
     }, []);
 
     const sendMessage = (msg) => {

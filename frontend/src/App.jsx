@@ -11,8 +11,10 @@ import ProtectedRoutes from './utils/ProtectedRoutes.jsx'
 import { AuthProvider } from './contexts/AuthContext.jsx'
 import { WSContextProvider } from './contexts/WSContext.jsx'
 import JoinRoom from './components/JoinRoom.jsx'
-function App() {
+import TestComponent from "./components/TestComponent.jsx"
+import FeatureSection from './components/TestComponent.jsx'
 
+function App() {
     return (
         <>
             <AuthProvider>
@@ -20,9 +22,9 @@ function App() {
                     <div className=''>
                         <Routes>
                             <Route path='/login' element={<LoginPage />} />
+                            <Route path='/' element={<LandingPage />} />
                             <Route path='/signup' element={<RegisterPage />} />
                             <Route element={<ProtectedRoutes />}>
-                                <Route path='/' element={<LandingPage />} />
                                 <Route path='/dashboard' element={<DashBoard />} />
                                 <Route path='/createroom' element={<CreateRoom />} />
                                 <Route path='/room' element={<RoomInterface />} />

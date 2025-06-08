@@ -4,8 +4,12 @@ const sendRoomMessage = async (ws, data, roomStore) => {
     const result = await addMessage(roomId, data);
     if (result) console.log("message added successfully");
 
+    if (!roomStore[roomId]) roomStore[roomId] = { users: {} };
+    roomStore[roomId].users[username] = ws;
+
     console.log("inside sendRoomMessage");
     const clients = Object.values(roomStore[roomId].users);
+    console.log("why the hell this is not defined", clients);
 
     console.log({
         success: true,

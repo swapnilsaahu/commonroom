@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext.jsx";
 
 
@@ -46,9 +46,9 @@ const LoginPage = () => {
     }
 
     return (
-        <div className="min-h-screen w-full px-4 py-6 flex justify-center items-center bg-black overflow-x-hidden">
-            <div className="w-full max-w-md flex flex-col gap-4 text-white">
-                <h2 className="text-4xl text-center">StudyHub</h2>
+        <div className="min-h-screen w-full px-4 py-6 flex justify-center items-center bg-gray-50 overflow-x-hidden">
+            <div className="w-full max-w-md flex flex-col gap-4 text-black">
+                <h2 className="text-4xl text-center">Commonroom</h2>
                 <h3 className="text-xl text-center">Login</h3>
 
                 {error && (
@@ -62,7 +62,7 @@ const LoginPage = () => {
                         type="text"
                         name="username"
                         placeholder="Username"
-                        className="bg-gray-800 border border-gray-600 rounded-lg p-2 w-full"
+                        className="bg-gray-200 border border-gray-600 rounded-lg p-2 w-full"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         disabled={isLoading}
@@ -72,7 +72,7 @@ const LoginPage = () => {
                         type="password"
                         name="password"
                         placeholder="Password"
-                        className="bg-gray-800 border border-gray-600 rounded-lg p-2 w-full"
+                        className="bg-gray-200 border border-gray-600 rounded-lg p-2 w-full"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         disabled={isLoading}
@@ -80,7 +80,7 @@ const LoginPage = () => {
                     />
                     <button
                         type="submit"
-                        className="text-gray-900 bg-amber-50 py-3 rounded-xl w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="text-white bg-black py-3 rounded-xl w-full disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={isLoading || !username || !password}
                     >
                         {isLoading ? 'Logging in...' : 'Login'}
@@ -88,10 +88,10 @@ const LoginPage = () => {
                 </form>
 
                 <p className="text-gray-500 text-center text-sm">
-                    Don't have an account? <a className="underline cursor-pointer">Sign up</a>
+                    Don't have an account? <Link to="/signup" className="underline cursor-pointer">Sign up</Link>
                 </p>
             </div>
-        </div>
+        </div >
     );
 };
 

@@ -9,14 +9,15 @@ const addMessage = async (roomId, message) => {
     const unsavedMessageListKey = `${getRoomKey(roomId)}:unsaved_messages`;
 
     // add message to the start of the list
-    await client.lPush(messageListKey, JSON.stringify(message));
-    await client.lPush(unsavedMessageListKey, JSON.stringify(message));
+    await client.rPush(messageListKey, JSON.stringify(message));
+    await client.rPush(unsavedMessageListKey, JSON.stringify(message));
     const lengthOfUnsavedMessages = await client.lLen(unsavedMessageListKey);
     if (lengthOfUnsavedMessages > 4) {
         await batchStoreMessageDB(roomId);
+
     }
     // trim the list to only the last 20 messages
-    await client.lTrim(messageListKey, 0, 19); // Keeps only first 20 items (most recent)
+    await client.lTrim(messageListKey, -20, -1); // Keeps only first 20 items (most recent)
 
     return message;
 };
@@ -60,6 +61,7 @@ const batchStoreMessageDB = async (roomId) => {
 
             // Clear processing key after successful save
             await client.del(processingKey);
+            await client.del(unsavedMessagesListKey);
 
         } catch (error) {
             console.error("Failed to save batch:", error);

@@ -6,6 +6,8 @@ import MessageDisplay from "../components/MessageDisplay.jsx";
 import UserList from "../components/UserList.jsx";
 import LeftRoomDetailComponent from "../components/LeftRoomDetailComponent.jsx"
 import AfterAuthNavBar from "../components/AfterAuthNavBar.jsx";
+
+
 const RoomInterface = () => {
     const [currentMessage, setCurrentMsg] = useState('');
     const { sendMessage, roomData, messages } = useWSConnection();
@@ -15,6 +17,8 @@ const RoomInterface = () => {
     const messagesEndRef = useRef(null);
     const containerRef = useRef(null);
     const previousScrollHeightRef = useRef(0);
+
+
     const setMessageValue = (value) => {
         setCurrentMsg(value);
     }
@@ -53,6 +57,7 @@ const RoomInterface = () => {
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
+
     useEffect(() => {
         scrollToBottom();
 
@@ -65,6 +70,7 @@ const RoomInterface = () => {
         getMessagesOnMount();
     }, []);
     //initially the calledRef is set to false so the getMessagesOnMount runs for first time and sets calledRef to true so that it avoids rerunning on second render useref doesnt rerender on change or update
+
     return (
         <div className="h-screen flex flex-col">
             <header className="w-full flex-shrink-0 bg-black text-white text-center p-2 text-l ">
