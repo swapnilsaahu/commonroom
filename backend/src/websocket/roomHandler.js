@@ -1,6 +1,7 @@
 import { addUserToRoomRedis, createOrGetRoomRedis, getRoom, getUsersInRoom } from "../services/roomStore.js";
 
 import { Rooms } from "../models/roomsModel.js"
+import { User } from "../models/userModelDB.js"
 
 //gets random number converts them to base 36 and slice the string to remove decimal and make it short
 const randomId = () => {
@@ -152,6 +153,19 @@ const getUsers = async (ws, data) => {
     }
 }
 
+const getRooms = async (ws, data) => {
+    const { username } = data;
+    const user = await User.findOne({ username: username }).populate('rooms');
+    const roomList = user.rooms;
+    if (ws.readyState === ws.OPEN) {
+        ws.send(JSON.stringify({
+            success: true,
+            type: "getRooms",
+            rooms: roomList
+        }))
+    }
+}
+
 const reconnectRoom = async (ws, data, roomStore) => {
     try {
         const { username, roomId } = data;
@@ -183,5 +197,5 @@ const reconnectRoom = async (ws, data, roomStore) => {
 }
 
 export {
-    createRoomMessage, joinRoomMessage, getUsers, reconnectRoom
+    createRoomMessage, joinRoomMessage, getUsers, reconnectRoom, getRooms
 }

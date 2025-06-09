@@ -25,7 +25,11 @@ const userSchema = new mongoose.Schema({
     },
     refreshToken: {
         type: String
-    }
+    },
+    rooms: [{
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: 'Rooms'
+    }],
 }, { timestamps: true });
 
 // Hash the password only if it has been modified before saving the document

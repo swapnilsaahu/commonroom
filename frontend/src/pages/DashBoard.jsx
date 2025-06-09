@@ -2,14 +2,27 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useWSConnection } from "../contexts/WSContext";
 import AfterAuthNavBar from "../components/AfterAuthNavBar.jsx";
+import { useEffect } from "react";
 const DashBoard = () => {
     const navigate = useNavigate();
+    const { username } = useAuth();
+    const { sendMessage, rooms } = useWSConnection();
     const createRoomHandle = async () => {
         navigate('/createroom');
     }
     const joinRoomHandle = async () => {
         navigate('/joinroom');
     }
+    const getUsersRooms = async () => {
+        const msgObject = {
+            type: 'getRooms',
+            username: username
+        }
+        sendMessage(msgObject);
+    }
+    useEffect(() => {
+        getUsersRooms();
+    }, [rooms])
     return (
         <section>
             <AfterAuthNavBar />
@@ -22,6 +35,13 @@ const DashBoard = () => {
                     </div>
                     <div>
                         Available Rooms
+                        <div>
+                            {rooms.map((room, index) => (
+                                <div key={index} className="bg-gray-200 text-white">
+                                    {room.roomname}
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div >

@@ -65,6 +65,11 @@ const addUserToRoomRedis = async (roomId, username) => {
             { $addToSet: { users: userDocDB._id } },
             { new: true }
         )
+        await User.findOneAndUpdate(
+            { username: username },
+            { $addToSet: { rooms: addUserToRoomDB._id } },
+            { new: true }
+        )
         if (!addUserToRoomDB) {
             console.error("unable to update the room with user in db", error);
             return;

@@ -18,6 +18,7 @@ export const WSContextProvider = ({ children }) => {
     const [roomData, setroomData] = useState();
     const [messages, setRoomMessages] = useState([]);
     const [users, setUsersInRoom] = useState([]);
+    const [rooms, setRooms] = useState([]);
 
 
     useEffect(() => {
@@ -63,6 +64,9 @@ export const WSContextProvider = ({ children }) => {
                     sessionStorage.setItem('roomData', JSON.stringify(data));
                     console.log("inside reconnect wscontext", sessionStorage.getItem("roomData"))
                     break;
+                case 'getRooms':
+                    setRooms(data.rooms);
+                    break;
                 default:
                     setroomData(data);
             }
@@ -94,7 +98,8 @@ export const WSContextProvider = ({ children }) => {
         messages,
         users,
         clearRoom,
-        setroomData
+        setroomData,
+        rooms
     }
     return (
         <wsContext.Provider value={value}>
