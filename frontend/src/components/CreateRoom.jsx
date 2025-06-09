@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useWSConnection } from "../contexts/WSContext";
+import AfterAuthNavBar from "./AfterAuthNavBar";
 const CreateRoom = () => {
     const [roomname, setroomname] = useState('');
     const [roomCode, setRoomCode] = useState('');
@@ -32,12 +33,13 @@ const CreateRoom = () => {
         clearRoom();
     }, [])
     return (
-        <div>
-            <input type="text" name="RoomName" onChange={storeRoomName}></input>
-            <button type="button" onClick={sendCreateReq}>Create Room</button>
-            <div>Room Code:-</div>
-            <div readOnly value={roomCode}></div>
-        </div>
+        <section>
+            <AfterAuthNavBar />
+            <div className="flex flex-col justify-center items-center mt-10">
+                <input type="text" name="RoomName" onChange={storeRoomName} className="bg-gray-100 p-5 m-3 rounded border"></input>
+                <button type="button" onClick={sendCreateReq} className="bg-black text-white p-4 m-4 hover:bg-gray-500">Create Room</button>
+            </div>
+        </section>
     )
 }
 

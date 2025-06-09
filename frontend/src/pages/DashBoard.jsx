@@ -6,7 +6,7 @@ import { useEffect } from "react";
 const DashBoard = () => {
     const navigate = useNavigate();
     const { username } = useAuth();
-    const { sendMessage, rooms } = useWSConnection();
+    const { sendMessage, rooms, clearRoom } = useWSConnection();
     const createRoomHandle = async () => {
         navigate('/createroom');
     }
@@ -23,6 +23,10 @@ const DashBoard = () => {
     useEffect(() => {
         getUsersRooms();
     }, [rooms])
+
+    useEffect(() => {
+        clearRoom();
+    }, [])
     return (
         <section>
             <AfterAuthNavBar />
