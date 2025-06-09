@@ -7,9 +7,11 @@ const addMessage = async (roomId, message) => {
     const client = getClient();
     const messageListKey = `${getRoomKey(roomId)}:messages`;
     const unsavedMessageListKey = `${getRoomKey(roomId)}:unsaved_messages`;
-
+    const roomDataKey = `${getRoomKey(roomId)}`
+    const updateLastActivity = new Date().toISOString();
     // add message to the start of the list
     await client.rPush(messageListKey, JSON.stringify(message));
+    await client.hSet(roomDataKey, 'lastActivity', updateLastActivity);
     await client.rPush(unsavedMessageListKey, JSON.stringify(message));
     const lengthOfUnsavedMessages = await client.lLen(unsavedMessageListKey);
     if (lengthOfUnsavedMessages > 4) {

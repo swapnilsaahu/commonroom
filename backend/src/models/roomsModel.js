@@ -1,3 +1,4 @@
+import mongoose from "mongoose"
 
 const roomSchema = new mongoose.Schema({
     roomId: {
@@ -10,27 +11,20 @@ const roomSchema = new mongoose.Schema({
         required: true
     },
     users: [{
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     }],
     memberscount: {
         type: Number
     },
-    admin: {
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    },
     messages: [{
         type: Schema.Types.ObjectId,
-        ref: 'Message',
-        required: true
+        ref: 'Message'
     }]
 }, { timestamp: true });
 
 roomSchema.pre('validate', function(next) {
-    this.memberscount = this.users.lenght;
+    this.memberscount = this.users.length;
     next();
 });
 

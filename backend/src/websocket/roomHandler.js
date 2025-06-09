@@ -1,5 +1,7 @@
 import { addUserToRoomRedis, createOrGetRoomRedis, getRoom, getUsersInRoom } from "../services/roomStore.js";
 
+import { Rooms } from "../models/roomsModel.js"
+
 //gets random number converts them to base 36 and slice the string to remove decimal and make it short
 const randomId = () => {
     return Math.random().toString(36).substring(2, 10);
@@ -27,17 +29,18 @@ const getId = (object) => {
     }
     return id;
 }
-const createRoom = async (roomStore, roomId, roomname) => {
+const createRoom = async (roomStore, roomId, roomname, username) => {
 
-    const createdAt = new Date().toISOString();
-    roomStore[roomId] = {
-        users: {},
-        usercount: 0,
-        roomname: roomname,
-        createdAt: createdAt
+    const lastActivity = new Date().toISOString();
+    if (!roomStore[roomId]) {
+        roomStore[roomId] = {
+            users: {},
+            usercount: 0,
+            roomname: roomname
+        }
     }
     console.log(roomStore);
-    const res = await createOrGetRoomRedis(roomId, roomname, createdAt);
+    const res = await createOrGetRoomRedis(roomId, roomname, lastActivity, username);
     return res;
 
 }
@@ -56,12 +59,13 @@ const createRoomMessage = async (ws, data, roomStore) => {
     //was trying query way but realised there are easy ways to send info in websocket
     const { username, roomname } = data;
     if (!username) {
-        ws.close(1008, "Missing required query parameters."); //1008 because it recived wrong inputs policy violations and closes the ws
+        ws.close(1008, "Missing required username parameters."); //1008 because it recived wrong inputs policy violations and closes the ws
         return;
     }
-    const roomId = getId(roomStore); //random unique
+    const roomId = getId(roomStore);
+    //random unique
     try {
-        const resRoomId = await createRoom(roomStore, roomId, roomname);
+        const resRoomId = await createRoom(roomStore, roomId, roomname, username);
         const resUsername = await addUserToRoom(roomStore, roomId, username, ws);
 
 
@@ -91,18 +95,19 @@ const joinRoomMessage = async (ws, data, roomStore) => {
         ws.close(1008, "please provide proper details");
         return;
     };
+
     const roomExists = getRoom(roomId);
+
     if (!roomStore[roomId] && !roomExists) {
         //check in redis if room exists or not 
-        ws.close(1008, "Room does not exist");
-        return;
-    }
-    if (!roomStore[roomId]) {
-        roomStore[roomId] = {
-            users: {},
-            usercount: 0,
+        console.log("Room does not exist in redis");
+        const roomExistsInDB = await Rooms.findOne({ roomId: roomId });
+        if (!roomExistsInDB) {
+            ws.close(1008, "room doesnt exists");
+            return;
         }
     }
+
     try {
         const resUsername = await addUserToRoom(roomStore, roomId, username, ws);
         if (resUsername) {
@@ -147,6 +152,33 @@ const getUsers = async (ws, data) => {
     }
 }
 
+const reconnectRoom = async (ws, data, roomStore) => {
+    try {
+        const { username, roomId } = data;
+        if (!username || !roomId) {
+            console.error("invalid params");
+            return;
+        }
+
+        const resRoomId = await createRoom(roomStore, roomId, roomname, username);
+        const resUsername = await addUserToRoom(roomStore, roomId, username, ws);
+        const clients = Object.values(roomStore[roomId].users);
+        for (const client of clients) {
+            if (client.readyState === ws.OPEN) {
+                client.send(JSON.stringify({
+                    success: true,
+                    roomId: roomId,
+                    type: "reconnect",
+                    msg: "user reconnected successfully"
+                }));
+            }
+        }
+
+
+    } catch (error) {
+        console.error("error while reconnecting to room, check parameters");
+    }
+}
 
 export {
     createRoomMessage, joinRoomMessage, getUsers
