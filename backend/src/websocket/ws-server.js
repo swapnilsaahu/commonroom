@@ -1,6 +1,6 @@
 
 import { WebSocketServer } from "ws";
-import { createRoomMessage, getUsers, joinRoomMessage } from "../websocket/roomHandler.js";
+import { createRoomMessage, getUsers, joinRoomMessage, reconnectRoom } from "../websocket/roomHandler.js";
 import { getLastNMessagesOnMount, sendRoomMessage } from "../websocket/messageHandler.js";
 
 
@@ -27,7 +27,8 @@ export const startWebSocketServer = (httpServer) => {
             "join": joinRoomMessage,
             "sendMessage": sendRoomMessage,
             "onMountMessages": getLastNMessagesOnMount,
-            "getUsers": getUsers
+            "getUsers": getUsers,
+            "reconnect": reconnectRoom
         }
         //console.log("inside connection in ws", req.url);
         ws.on('error', console.error);

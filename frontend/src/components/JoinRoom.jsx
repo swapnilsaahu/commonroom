@@ -5,7 +5,7 @@ import { useWSConnection } from "../contexts/WSContext";
 import { useNavigate } from "react-router-dom";
 const JoinRoom = () => {
     const { username } = useAuth();
-    const { sendMessage, roomData } = useWSConnection();
+    const { sendMessage, roomData, clearRoom } = useWSConnection();
 
     const [roomId, setRoomId] = useState('');
     const navigate = useNavigate();
@@ -22,6 +22,10 @@ const JoinRoom = () => {
             navigate('/room');
         }
     }, [roomData, navigate]);
+
+    useEffect(() => {
+        clearRoom();
+    }, [])
     return (
         <div>
             <input type="text" name="" onChange={(e) => setRoomId(e.target.value)} value={roomId} className=" border bg-gray-50" />

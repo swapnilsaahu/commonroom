@@ -18,7 +18,7 @@ const roomSchema = new mongoose.Schema({
         type: Number
     },
     messages: [{
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'Message'
     }]
 }, { timestamp: true });

@@ -1,5 +1,6 @@
 import { getClient } from "../db/client.js";
 import { Rooms } from "../models/roomsModel.js";
+import { User } from "../models/userModelDB.js"
 const getRoomKey = (roomId) => {
     return `room:${roomId}`;
 }
@@ -20,14 +21,13 @@ const createOrGetRoomRedis = async (roomId, roomname, lastActivity) => {
         const client = getClient();
         const roomKey = getRoomKey(roomId);
         const roomExists = await client.exists(roomKey);
-        const roomnameFromDB = roomExistsInDB.roomname;
-        console.log("inside createOrGetRoomRedis", roomId, roomname);
+        //console.log("inside createOrGetRoomRedis", roomId, roomname);
         if (roomExists) {
             return await getRoom(roomId);
         }
         else {
             await client.hSet(roomKey, {
-                roomname: roomname || roomnameFromDB,
+                roomname: roomname || roomExistsInDB.roomname,
                 usercount: '0',
                 lastActivity: lastActivity
             });

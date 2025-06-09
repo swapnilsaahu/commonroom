@@ -6,7 +6,7 @@ const CreateRoom = () => {
     const [roomname, setroomname] = useState('');
     const [roomCode, setRoomCode] = useState('');
     const { username } = useAuth();
-    const { sendMessage, roomData } = useWSConnection();
+    const { sendMessage, roomData, clearRoom } = useWSConnection();
     const navigate = useNavigate();
     const storeRoomName = (event) => {
         console.log(event.target.value);
@@ -27,6 +27,10 @@ const CreateRoom = () => {
             setRoomCode(roomData.roomId)
         }
     }, [roomData, navigate]);
+
+    useEffect(() => {
+        clearRoom();
+    }, [])
     return (
         <div>
             <input type="text" name="RoomName" onChange={storeRoomName}></input>

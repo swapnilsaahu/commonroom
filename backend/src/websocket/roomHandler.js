@@ -162,6 +162,7 @@ const reconnectRoom = async (ws, data, roomStore) => {
 
         const resRoomId = await createRoom(roomStore, roomId, roomname, username);
         const resUsername = await addUserToRoom(roomStore, roomId, username, ws);
+        console.log(`${resUsername} reconnected to the room`);
         const clients = Object.values(roomStore[roomId].users);
         for (const client of clients) {
             if (client.readyState === ws.OPEN) {
@@ -169,6 +170,7 @@ const reconnectRoom = async (ws, data, roomStore) => {
                     success: true,
                     roomId: roomId,
                     type: "reconnect",
+                    roomname: roomname,
                     msg: "user reconnected successfully"
                 }));
             }
@@ -181,5 +183,5 @@ const reconnectRoom = async (ws, data, roomStore) => {
 }
 
 export {
-    createRoomMessage, joinRoomMessage, getUsers
+    createRoomMessage, joinRoomMessage, getUsers, reconnectRoom
 }

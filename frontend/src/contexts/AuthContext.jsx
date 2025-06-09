@@ -24,6 +24,7 @@ export const AuthProvider = ({ children }) => {
                 setIsAuthenticated(true);
                 console.log(username, "inside respon success context");
                 setUsername(response.data.username);
+                sessionStorage.setItem('username', response.data.username);
                 return { success: true };
             } else {
                 const errorData = await response.json();
@@ -43,6 +44,7 @@ export const AuthProvider = ({ children }) => {
                 console.log(result, "inside checkauth in context");
                 setIsAuthenticated(true);
                 setUsername(result.data.username);
+                sessionStorage.setItem('username', result.data.username);
             }
             else {
                 setIsAuthenticated(false);
@@ -61,7 +63,8 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated,
         username,
         checkAuth,
-        handleLogin
+        handleLogin,
+        setUsername
     };
 
     return (

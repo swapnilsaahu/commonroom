@@ -28,13 +28,6 @@ export const WSContextProvider = ({ children }) => {
         ws.onopen = () => {
             console.log("Connected");
             console.log(ws);
-            const roomDataFromLocalStorage = JSON.parse(localStorage.getItem('roomData'))
-            const reconnectToRoomObj = {
-                type: "join",
-                roomId: roomDataFromLocalStorage.roomId,
-                username: roomDataFromLocalStorage.username
-            }
-            sendMessage(reconnectToRoomObj);
         }
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
@@ -44,21 +37,31 @@ export const WSContextProvider = ({ children }) => {
             switch (type) {
                 case 'created':
                     setroomData(data);
-                    localStorage.setItem('roomData', JSON.stringify(data));
+                    sessionStorage.setItem('roomData', JSON.stringify(data));
+                    console.log("inside created wscontext", sessionStorage.getItem('roomData'));
                     break;
                 case 'joined': {
                     setroomData(data);
-                    localStorage.setItem('roomData', JSON.stringify(data));
+                    sessionStorage.setItem('roomData', JSON.stringify(data));
                     break;
                 }
                 case 'onmessage':
                     setRoomMessages((prevMessages) => [...prevMessages, data]);
                     break;
                 case 'onMountMessages':
-                    setRoomMessages((prev) => [...prev, ...data.message])
+                    if (data.message && Array.isArray(data.message)) {
+                        setRoomMessages(data.message);
+                    }
                     break;
                 case 'getUsersInRoom':
-                    setUsersInRoom((prev) => [...prev, ...data.users])
+                    if (data.users && Array.isArray(data.users)) {
+                        setUsersInRoom(data.users);
+                    }
+                    break;
+                case 'reconnect':
+                    setroomData(data);
+                    sessionStorage.setItem('roomData', JSON.stringify(data));
+                    console.log("inside reconnect wscontext", sessionStorage.getItem("roomData"))
                     break;
                 default:
                     setroomData(data);
@@ -69,8 +72,6 @@ export const WSContextProvider = ({ children }) => {
             console.error("Error connecting to WS", error);
         };
 
-        const roomDataLocalStorage = JSON.parse(localStorage.getItem('roomData'))
-        setroomData(roomDataLocalStorage);
     }, []);
 
     const sendMessage = (msg) => {
@@ -78,12 +79,22 @@ export const WSContextProvider = ({ children }) => {
             wsConnectionObject.send(JSON.stringify(msg));
         }
     }
+
+    const clearRoom = () => {
+        setroomData({
+            roomId: '',
+            roomname: '',
+        });
+        sessionStorage.removeItem("roomId");
+    }
     const value = {
         wsConnectionObject,
         sendMessage,
         roomData,
         messages,
-        users
+        users,
+        clearRoom,
+        setroomData
     }
     return (
         <wsContext.Provider value={value}>

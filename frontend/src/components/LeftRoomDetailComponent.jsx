@@ -1,14 +1,18 @@
-import { useWSConnection } from "../contexts/WSContext.jsx";
-const LeftRoomDetailComponent = () => {
-    const { roomData } = useWSConnection();
+const LeftRoomDetailComponent = ({ roomData }) => {
+    if (!roomData) {
+        return (
+            <div className="p-4">
+                <p>Loading room details...</p>
+            </div>
+        );
+    }
+
     return (
-        <div className="w-1/5 p-4 text-black">
-            <h2 className="text-lg font-bold mb-2">Roomname:</h2>
-            <p className="text-black font-medium mb-4">{roomData.roomname}</p>
-            <h2 className="text-lg font-bold mb-2">Roomcode:</h2>
-            <p className="text-black font-mono">{roomData.roomId}</p>
+        <div className="p-4">
+            <h2 className="text-3xl font-bold">{roomData.roomname}</h2>
+            <p className="text-sm">Room ID: {roomData.roomId}</p>
         </div>
-    )
-}
+    );
+};
 
 export default LeftRoomDetailComponent;
