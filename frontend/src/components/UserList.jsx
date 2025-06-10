@@ -1,7 +1,10 @@
 import { useEffect, useRef } from "react";
 import { useWSConnection } from "../contexts/WSContext.jsx";
+import { useAuth } from "../contexts/AuthContext.jsx";
+
 const UserList = ({ roomId }) => {
-    const { sendMessage, users } = useWSConnection();
+    const { sendMessage, roomData } = useWSConnection();
+    const { users, usersInARoomDB } = useAuth();
     const calledRef = useRef(false);
     const getUsers = () => {
         const msgObject = {
@@ -21,7 +24,7 @@ const UserList = ({ roomId }) => {
             <div className="space-y-2">
                 {users.map((user, index) => (
                     <div key={index} className="text-black py-2 px-3 rounded-l text-center font-medium">
-                        {user}
+                        {user.username}
                     </div>
                 ))}
             </div>

@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useRef } from "react";
 import { createContext } from "react";
 import { useContext } from "react";
 
@@ -17,13 +16,11 @@ export const WSContextProvider = ({ children }) => {
     const [wsConnectionObject, setWSConnectionObject] = useState();
     const [roomData, setroomData] = useState();
     const [messages, setRoomMessages] = useState([]);
-    const [users, setUsersInRoom] = useState([]);
-    const [rooms, setRooms] = useState([]);
 
 
     useEffect(() => {
 
-        const ws = new WebSocket('ws://localhost:3000');
+        const ws = new WebSocket(import.meta.env.VITE_WEBSOCKET_URL);
         setWSConnectionObject(ws);
 
         ws.onopen = () => {
@@ -54,18 +51,10 @@ export const WSContextProvider = ({ children }) => {
                         setRoomMessages(data.message);
                     }
                     break;
-                case 'getUsersInRoom':
-                    if (data.users && Array.isArray(data.users)) {
-                        setUsersInRoom(data.users);
-                    }
-                    break;
                 case 'reconnect':
                     setroomData(data);
                     sessionStorage.setItem('roomData', JSON.stringify(data));
                     console.log("inside reconnect wscontext", sessionStorage.getItem("roomData"))
-                    break;
-                case 'getRooms':
-                    setRooms(data.rooms);
                     break;
                 default:
                     setroomData(data);
@@ -96,10 +85,8 @@ export const WSContextProvider = ({ children }) => {
         sendMessage,
         roomData,
         messages,
-        users,
         clearRoom,
         setroomData,
-        rooms
     }
     return (
         <wsContext.Provider value={value}>

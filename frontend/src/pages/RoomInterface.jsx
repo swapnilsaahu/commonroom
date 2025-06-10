@@ -126,7 +126,6 @@ const RoomInterface = () => {
                     </div>
                 </div>
                 <div className="bg-gray-50 text-black flex-[1] text-center ">
-                    <UserList roomId={roomData?.roomId} />
                 </div>
             </main >
         </div >
@@ -134,3 +133,5 @@ const RoomInterface = () => {
 }
 
 export default RoomInterface;
+//                    <UserList roomId={roomData?.roomId} />
+

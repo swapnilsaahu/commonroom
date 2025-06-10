@@ -45,9 +45,11 @@ const createRoom = async (roomStore, roomId, roomname, username) => {
     return res;
 
 }
-const addUserToRoom = async (roomStore, roomId, username, ws) => {
+const addUserToRoom = async (roomStore, roomId, roomname, username, ws) => {
     //if room already exists to add members for join 
-
+    if (!roomStore[roomId]) {
+        await createRoom(roomStore, roomId, roomname, username);
+    }
     roomStore[roomId].users[username] = ws;
     const userCount = Object.keys(roomStore[roomId].users).length;
     roomStore[roomId].usercount = userCount;
@@ -67,7 +69,7 @@ const createRoomMessage = async (ws, data, roomStore) => {
     //random unique
     try {
         const resRoomId = await createRoom(roomStore, roomId, roomname, username);
-        const resUsername = await addUserToRoom(roomStore, roomId, username, ws);
+        const resUsername = await addUserToRoom(roomStore, roomId, roomname, username, ws);
 
 
         console.log(roomStore);
@@ -153,18 +155,6 @@ const getUsers = async (ws, data) => {
     }
 }
 
-const getRooms = async (ws, data) => {
-    const { username } = data;
-    const user = await User.findOne({ username: username }).populate('rooms');
-    const roomList = user.rooms;
-    if (ws.readyState === ws.OPEN) {
-        ws.send(JSON.stringify({
-            success: true,
-            type: "getRooms",
-            rooms: roomList
-        }))
-    }
-}
 
 const reconnectRoom = async (ws, data, roomStore) => {
     try {
@@ -197,5 +187,5 @@ const reconnectRoom = async (ws, data, roomStore) => {
 }
 
 export {
-    createRoomMessage, joinRoomMessage, getUsers, reconnectRoom, getRooms
+    createRoomMessage, joinRoomMessage, getUsers, reconnectRoom
 }

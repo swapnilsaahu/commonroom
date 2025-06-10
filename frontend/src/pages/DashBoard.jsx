@@ -5,24 +5,20 @@ import AfterAuthNavBar from "../components/AfterAuthNavBar.jsx";
 import { useEffect } from "react";
 const DashBoard = () => {
     const navigate = useNavigate();
-    const { username } = useAuth();
-    const { sendMessage, rooms, clearRoom } = useWSConnection();
+    const { username, roomsFromDB, rooms } = useAuth();
+    const { clearRoom } = useWSConnection();
     const createRoomHandle = async () => {
         navigate('/createroom');
     }
     const joinRoomHandle = async () => {
         navigate('/joinroom');
     }
-    const getUsersRooms = async () => {
-        const msgObject = {
-            type: 'getRooms',
-            username: username
-        }
-        sendMessage(msgObject);
-    }
+
     useEffect(() => {
-        getUsersRooms();
-    }, [rooms])
+        if (username) {
+            roomsFromDB(username);
+        }
+    }, [username])
 
     useEffect(() => {
         clearRoom();
@@ -41,9 +37,15 @@ const DashBoard = () => {
                         Available Rooms
                         <div>
                             {rooms.map((room, index) => (
-                                <div key={index} className="bg-gray-200 text-white">
-                                    {room.roomname}
+                                <div key={index} className="bg-black text-white m-2">
+                                    <div>
+                                        {room.roomname}
+                                    </div>
+                                    <div>
+                                        {room.roomId}
+                                    </div>
                                 </div>
+
                             ))}
                         </div>
                     </div>

@@ -114,8 +114,22 @@ const verifyUser = asyncHandler((req, res) => {
         }, "verified user")
     )
 })
+
+const getRooms = asyncHandler(async (req, res) => {
+    console.log(req.query);
+    const { username } = req.query;
+    const user = await User.findOne({ username: username }).select('username rooms').populate({
+        path: 'rooms',
+        select: 'roomId roomname -_id'
+    });
+    const roomList = user.rooms;
+    return res.status(200).json(
+        new ApiResponse(200, { "rooms": roomList }, "rooms fetched successfully")
+    )
+})
 export {
     registerUser,
     loginUser,
-    verifyUser
+    verifyUser,
+    getRooms
 }

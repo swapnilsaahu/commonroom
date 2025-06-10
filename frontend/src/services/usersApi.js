@@ -34,4 +34,23 @@ const checkAuthApi = async () => {
         console.error("error while doing authcheck", error);
     }
 }
-export { signupFetch, loginFetchApi, checkAuthApi }
+
+const getRoomsApi = async (username) => {
+    try {
+        const res = await axiosApi.get(`/api/v1/users/rooms?username=${encodeURIComponent(username)}`);
+        return res.data;
+    }
+    catch (error) {
+        console.error("error while getting rooms", error);
+    }
+}
+
+const getUsersApi = async (roomId) => {
+    try {
+        const res = await axiosApi.get(`/api/v1/room/users?roomId=${encodeURIComponent(roomId)}`,);
+        return res.data;
+    } catch (error) {
+        console.error("error while fetching users", error);
+    }
+}
+export { signupFetch, loginFetchApi, checkAuthApi, getRoomsApi, getUsersApi }
