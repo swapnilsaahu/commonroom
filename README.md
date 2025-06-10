@@ -136,11 +136,11 @@ commonroom/
 │   ├── routes/              # API routes
 │   ├── services/            # Business logic
 │   ├── utils/               # Helper functions
-│   ├── websocket/ 			 # WebSocket server setup
-│   ├──db					 # Database connection
-│   ├──zodSchema			 # Zod Schema for input validations
+│   ├── websocket/           # WebSocket server setup
+│   ├──db                    # Database connection
+│   ├──zodSchema             # Zod Schema for input validations
 │   ├── app.js               # Express app configuration
-│   ├── constant.js 		 # For constant values
+│   ├── constant.js          # For constant values
 │   └── index.js             # Server entry point
 │
 └── frontend/
@@ -166,14 +166,14 @@ commonroom/
 - `join` joinRoomMessage
 - `sendMessage`: sendRoomMessage
 - `onMountMessages`: getLastNMessagesOnMount
-- `getUsers`: getActiveUsers,
+- `getUsers`: getActiveUsers
 - `reconnect`: reconnectRoom
 
 ### Server to Client
--`created`: Room created successfully
--`joinde`: User joined the room
--`onmessage`: When room gets a message
--`onMountMessages`: received messages on mount of the component
--`reconnect`:reconnected to the server to persist refresh
+- `created`: Room created successfully
+- `joinde`: User joined the room
+- `onmessage`: When room gets a message
+- `onMountMessages`: received messages on mount of the component
+- `reconnect`:reconnected to the server to persist refresh
 
 
