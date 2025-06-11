@@ -76,7 +76,7 @@ VITE_API_BASE_URL=http://localhost:3000
 VITE_WEBSOCKET_URL=ws://localhost:3000
 ```
 
-```
+
 
 ### 4. Database Setup
 
@@ -87,7 +87,7 @@ VITE_WEBSOCKET_URL=ws://localhost:3000
 **Redis:**
 - Start Redis server at default port by redis 6379:
 
-```
+
 
 ##  Running the Application
 
