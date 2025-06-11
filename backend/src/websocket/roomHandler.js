@@ -1,7 +1,10 @@
-import { addUserToRoomRedis, createOrGetRoomRedis, getRoom, getUsersInRoom } from "../services/roomStore.js";
-
+import {
+    addUserToRoomRedis,
+    createOrGetRoomRedis,
+    getRoom,
+    getUsersInRoom,
+} from "../services/roomStore.js";
 import { Rooms } from "../models/roomsModel.js"
-import { User } from "../models/userModelDB.js"
 
 //gets random number converts them to base 36 and slice the string to remove decimal and make it short
 const randomId = () => {
@@ -30,162 +33,286 @@ const getId = (object) => {
     }
     return id;
 }
+// WebSocket ready states constants
+const WEBSOCKET_READY_STATE = {
+    CONNECTING: 0,
+    OPEN: 1,
+    CLOSING: 2,
+    CLOSED: 3
+};
+
 const createRoom = async (roomStore, roomId, roomname, username) => {
-
-    const lastActivity = new Date().toISOString();
-    if (!roomStore[roomId]) {
-        roomStore[roomId] = {
-            users: {},
-            usercount: 0,
-            roomname: roomname
-        }
-    }
-    console.log(roomStore);
-    const res = await createOrGetRoomRedis(roomId, roomname, lastActivity, username);
-    return res;
-
-}
-const addUserToRoom = async (roomStore, roomId, roomname, username, ws) => {
-    //if room already exists to add members for join 
-    if (!roomStore[roomId]) {
-        await createRoom(roomStore, roomId, roomname, username);
-    }
-    roomStore[roomId].users[username] = ws;
-    const userCount = Object.keys(roomStore[roomId].users).length;
-    roomStore[roomId].usercount = userCount;
-
-    const res = await addUserToRoomRedis(roomId, username);
-    return res;
-}
-
-const createRoomMessage = async (ws, data, roomStore) => {
-    //was trying query way but realised there are easy ways to send info in websocket
-    const { username, roomname } = data;
-    if (!username) {
-        ws.close(1008, "Missing required username parameters."); //1008 because it recived wrong inputs policy violations and closes the ws
-        return;
-    }
-    const roomId = getId(roomStore);
-    //random unique
     try {
+        const lastActivity = new Date().toISOString();
+
+        if (!roomStore[roomId]) {
+            roomStore[roomId] = {
+                users: {},
+                usercount: 0,
+                roomname: roomname,
+                lastActivity: lastActivity
+            };
+        }
+        console.log(roomStore);
+        const res = await createOrGetRoomRedis(roomId, roomname, lastActivity, username);
+        return res;
+    } catch (error) {
+        console.error("Error in createRoom:", error);
+        throw error;
+    }
+};
+
+const addUserToRoom = async (roomStore, roomId, roomname, username, ws) => {
+    try {
+        // If room doesn't exist, create it
+        if (!roomStore[roomId]) {
+            await createRoom(roomStore, roomId, roomname, username);
+        }
+
+        // Add properties to WebSocket for easier cleanup later
+        ws.roomId = roomId;
+        ws.username = username;
+        ws.roomname = roomname;
+
+        // Check if user is already in the room
+        if (roomStore[roomId].users[username]) {
+            console.log(`User ${username} already in room ${roomId}, updating connection`);
+            // Close the old connection if it exists and is different
+            const oldWs = roomStore[roomId].users[username];
+            if (oldWs !== ws && oldWs.readyState === WEBSOCKET_READY_STATE.OPEN) {
+                oldWs.close(1000, "New connection established");
+            }
+        }
+
+        // Store WebSocket connection in memory only
+        roomStore[roomId].users[username] = ws;
+        const userCount = Object.keys(roomStore[roomId].users).length;
+        roomStore[roomId].usercount = userCount;
+        roomStore[roomId].lastActivity = new Date().toISOString();
+
+        // Only store username and metadata in Redis/DB (NOT the WebSocket object)
+        const res = await addUserToRoomRedis(roomId, username);
+
+        // Return the username instead of the Redis response for consistency
+        return username;
+    } catch (error) {
+        console.error("Error in addUserToRoom:", error);
+        throw error; // Re-throw to handle in calling function
+    }
+};
+const createRoomMessage = async (ws, data, roomStore) => {
+    try {
+        const { username, roomname } = data;
+
+        // Validate required parameters
+        if (!username || !roomname) {
+            ws.close(1008, "Missing required username or roomname parameters");
+            return;
+        }
+
+        const roomId = getId(roomStore);
+
         const resRoomId = await createRoom(roomStore, roomId, roomname, username);
         const resUsername = await addUserToRoom(roomStore, roomId, roomname, username, ws);
 
-
         console.log(roomStore);
         console.log(`Creator ${resUsername} created roomID ${resRoomId}`);
-        //below gets all the connected clients to the websocket server 
-        if (ws.readyState === ws.OPEN) {
+
+        // Send response only if connection is still open
+        if (ws.readyState === WEBSOCKET_READY_STATE.OPEN) {
             ws.send(JSON.stringify({
                 success: true,
                 roomId: roomId,
                 type: "created",
                 roomname: roomname,
-                msg: "room created successfully"
+                usercount: roomStore[roomId].usercount,
+                msg: "Room created successfully"
             }));
         }
+    } catch (error) {
+        console.error("Error creating room:", error);
+        if (ws.readyState === WEBSOCKET_READY_STATE.OPEN) {
+            ws.close(1011, "Internal server error");
+        }
     }
-    catch (error) {
-        console.error("error creating room", error);
-        ws.close(1011, "internal server error");
-    }
-}
+};
 
 const joinRoomMessage = async (ws, data, roomStore) => {
+    try {
+        const { roomId, username } = data;
 
-    const { roomId, username } = data;
-    if (!roomId && !username) {
-        ws.close(1008, "please provide proper details");
-        return;
-    };
-
-    const roomExists = getRoom(roomId);
-
-    if (!roomStore[roomId] && !roomExists) {
-        //check in redis if room exists or not 
-        console.log("Room does not exist in redis");
-        const roomExistsInDB = await Rooms.findOne({ roomId: roomId });
-        if (!roomExistsInDB) {
-            ws.close(1008, "room doesnt exists");
+        // Fix: Use OR (||) instead of AND (&&) for validation
+        if (!roomId || !username) {
+            ws.close(1008, "Missing required roomId or username parameters");
             return;
         }
-    }
 
-    try {
-        const resUsername = await addUserToRoom(roomStore, roomId, username, ws);
-        if (resUsername) {
-            console.log(`${resUsername} joined the rooom with id: ${roomId}`);
-        }
-        //below gets all the connected clients to the websocket server 
-        const clients = Object.values(roomStore[roomId].users);
-        for (const client of clients) {
-            if (client.readyState === ws.OPEN) {
-                client.send(JSON.stringify({
-                    success: true,
-                    roomId: roomId,
-                    type: "joined",
-                    msg: "user joined successfully"
-                }));
+        // Check if room exists in memory, Redis, or database
+        let roomExists = false;
+        let roomname = null;
+
+        if (roomStore[roomId]) {
+            roomExists = true;
+            roomname = roomStore[roomId].roomname;
+        } else {
+            // Check Redis first
+            const redisRoom = await getRoom(roomId);
+            if (redisRoom) {
+                roomExists = true;
+                roomname = redisRoom.roomname;
+            } else {
+                // Check database as fallback
+                const roomExistsInDB = await Rooms.findOne({ roomId: roomId });
+                if (roomExistsInDB) {
+                    roomExists = true;
+                    roomname = roomExistsInDB.roomname;
+                }
             }
         }
-    }
-    catch (error) {
-        console.error('error joining the room', error);
-        ws.close(1011, "internal server error");
-    }
-}
 
+        if (!roomExists) {
+            ws.close(1008, "Room does not exist");
+            return;
+        }
 
+        const resUsername = await addUserToRoom(roomStore, roomId, roomname, username, ws);
+        if (resUsername) {
+            console.log(`${resUsername} joined the room with id: ${roomId}`);
+        }
+
+        // Notify all users in the room
+        const clients = Object.values(roomStore[roomId].users);
+        const joinMessage = JSON.stringify({
+            success: true,
+            roomId: roomId,
+            type: "joined",
+            username: username,
+            usercount: roomStore[roomId].usercount,
+            msg: "User joined successfully"
+        });
+
+        for (const client of clients) {
+            // Add null check and use correct constant
+            if (client && client.readyState === WEBSOCKET_READY_STATE.OPEN) {
+                try {
+                    client.send(joinMessage);
+                } catch (sendError) {
+                    console.error("Error sending message to client:", sendError);
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error joining the room:', error);
+        if (ws.readyState === WEBSOCKET_READY_STATE.OPEN) {
+            ws.close(1011, "Internal server error");
+        }
+    }
+};
 
 const getUsers = async (ws, data) => {
     try {
         const { roomId } = data;
+
+        if (!roomId) {
+            if (ws.readyState === WEBSOCKET_READY_STATE.OPEN) {
+                ws.send(JSON.stringify({
+                    success: false,
+                    type: "getUsersInRoom",
+                    error: "Missing roomId parameter"
+                }));
+            }
+            return;
+        }
+
         const users = await getUsersInRoom(roomId);
-        if (ws.readyState === ws.OPEN) {
+
+        if (ws.readyState === WEBSOCKET_READY_STATE.OPEN) {
             ws.send(JSON.stringify({
                 success: true,
                 type: "getUsersInRoom",
                 users: users,
-                roomId: roomId
-            }))
+                roomId: roomId,
+                usercount: users ? users.length : 0
+            }));
+        }
+    } catch (error) {
+        console.error("Error while fetching users:", error);
+        if (ws.readyState === WEBSOCKET_READY_STATE.OPEN) {
+            ws.send(JSON.stringify({
+                success: false,
+                type: "getUsersInRoom",
+                error: "Failed to fetch users"
+            }));
         }
     }
-    catch (error) {
-        console.error("error while fetching users", error);
-    }
-}
-
+};
 
 const reconnectRoom = async (ws, data, roomStore) => {
     try {
         const { username, roomId } = data;
+
         if (!username || !roomId) {
-            console.error("invalid params");
+            console.error("Missing required parameters for reconnection");
+            ws.close(1008, "Missing required username or roomId parameters");
             return;
         }
 
-        const resRoomId = await createRoom(roomStore, roomId, roomname, username);
-        const resUsername = await addUserToRoom(roomStore, roomId, username, ws);
-        console.log(`${resUsername} reconnected to the room`);
-        const clients = Object.values(roomStore[roomId].users);
-        for (const client of clients) {
-            if (client.readyState === ws.OPEN) {
-                client.send(JSON.stringify({
-                    success: true,
-                    roomId: roomId,
-                    type: "reconnect",
-                    roomname: roomname,
-                    msg: "user reconnected successfully"
-                }));
+        // Get room info from Redis or database
+        let roomname = null;
+        const redisRoom = await getRoom(roomId);
+        if (redisRoom) {
+            roomname = redisRoom.roomname;
+        } else {
+            const dbRoom = await Rooms.findOne({ roomId: roomId });
+            if (dbRoom) {
+                roomname = dbRoom.roomname;
+            } else {
+                ws.close(1008, "Room does not exist");
+                return;
             }
         }
 
+        // Recreate room in memory if needed
+        if (!roomStore[roomId]) {
+            await createRoom(roomStore, roomId, roomname, username);
+        }
+
+        const resUsername = await addUserToRoom(roomStore, roomId, roomname, username, ws);
+        console.log(`${resUsername} reconnected to room ${roomId}`);
+
+        // Notify all users in the room
+        const clients = Object.values(roomStore[roomId].users);
+        const reconnectMessage = JSON.stringify({
+            success: true,
+            roomId: roomId,
+            type: "reconnect",
+            username: username,
+            roomname: roomname,
+            usercount: roomStore[roomId].usercount,
+            msg: `${username} reconnected to the room`
+        });
+
+        for (const client of clients) {
+            if (client && client.readyState === WEBSOCKET_READY_STATE.OPEN) {
+                try {
+                    client.send(reconnectMessage);
+                } catch (sendError) {
+                    console.error("Error sending reconnect message to client:", sendError);
+                }
+            }
+        }
 
     } catch (error) {
-        console.error("error while reconnecting to room, check parameters");
+        console.error("Error reconnecting to room:", error);
+        if (ws.readyState === WEBSOCKET_READY_STATE.OPEN) {
+            ws.close(1011, "Internal server error");
+        }
     }
-}
+};
 
 export {
-    createRoomMessage, joinRoomMessage, getUsers, reconnectRoom
-}
+    createRoomMessage,
+    joinRoomMessage,
+    getUsers,
+    reconnectRoom,
+}; 

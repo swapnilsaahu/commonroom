@@ -125,8 +125,6 @@ const RoomInterface = () => {
                         />
                     </div>
                 </div>
-                <div className="bg-gray-50 text-black flex-[1] text-center ">
-                </div>
             </main >
         </div >
     )

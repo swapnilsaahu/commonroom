@@ -14,6 +14,18 @@ const RegisterPage = () => {
             navigate(from, { replace: true });
         }
     }, [isAuthenticated, navigate, location]);
+
+    const signUpHandle = async () => {
+        try {
+            const res = await signupFetch(userData);
+            if (res.success) {
+                navigate('/login');
+            }
+        } catch (error) {
+            console.error("error while signing up", error);
+        }
+    }
+
     return (
         <div className="min-h-screen w-full px-4 py-6 flex justify-center items-center bg-gray-50 overflow-x-hidden">
             <div className="w-full max-w-md flex flex-col gap-4 text-black">
@@ -39,7 +51,7 @@ const RegisterPage = () => {
                     setUserData(prev => ({ ...prev, lastName: e.target.value }))
                 }} />
 
-                <button className="text-white bg-black py-3 rounded-xl w-full" onClick={() => signupFetch(userData)}>Sign up</button>
+                <button className="text-white bg-black py-3 rounded-xl w-full" onClick={() => signUpHandle(userData)}>Sign up</button>
 
                 <p className="text-gray-500 text-center text-sm">
                     Already have an account? <Link to="/login" className="underline cursor-pointer">Sign in</Link>

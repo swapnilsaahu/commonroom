@@ -75,19 +75,7 @@ Create a `.env` file in the frontend directory:
 VITE_API_BASE_URL=http://localhost:3000
 VITE_WEBSOCKET_URL=ws://localhost:3000
 ```
-Configure the `vite.config.js` file
-```
- plugins: [react(), tailwindcss()],
-    server: {
-        host: '0.0.0.0',
-        porxy: {
-            '/api': {
-                target: `${import.meta.env.VITE_API_BASE_URL}`,
-                changeOrigin: true,
-            }
-        }
-    }
-}
+
 ```
 
 ### 4. Database Setup
@@ -163,7 +151,7 @@ commonroom/
 
 ### Client to Server
 - `create`: createRoomMessage
-- `join` joinRoomMessage
+- `join`: joinRoomMessage
 - `sendMessage`: sendRoomMessage
 - `onMountMessages`: getLastNMessagesOnMount
 - `getUsers`: getActiveUsers
@@ -171,7 +159,7 @@ commonroom/
 
 ### Server to Client
 - `created`: Room created successfully
-- `joinde`: User joined the room
+- `joined`: User joined the room
 - `onmessage`: When room gets a message
 - `onMountMessages`: received messages on mount of the component
 - `reconnect`:reconnected to the server to persist refresh

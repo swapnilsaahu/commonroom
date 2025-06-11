@@ -3,6 +3,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useWSConnection } from "../contexts/WSContext";
 import AfterAuthNavBar from "../components/AfterAuthNavBar.jsx";
 import { useEffect } from "react";
+import AvailableRooms from "../components/AvailableRooms.jsx";
 const DashBoard = () => {
     const navigate = useNavigate();
     const { username, roomsFromDB, rooms } = useAuth();
@@ -13,12 +14,6 @@ const DashBoard = () => {
     const joinRoomHandle = async () => {
         navigate('/joinroom');
     }
-
-    useEffect(() => {
-        if (username) {
-            roomsFromDB(username);
-        }
-    }, [username])
 
     useEffect(() => {
         clearRoom();
@@ -34,20 +29,7 @@ const DashBoard = () => {
                         <button type="button" onClick={joinRoomHandle} className="bg-black text-2xl m-4 p-4 hover:bg-gray-600">Join server</button>
                     </div>
                     <div>
-                        Available Rooms
-                        <div>
-                            {rooms.map((room, index) => (
-                                <div key={index} className="bg-black text-white m-2">
-                                    <div>
-                                        {room.roomname}
-                                    </div>
-                                    <div>
-                                        {room.roomId}
-                                    </div>
-                                </div>
-
-                            ))}
-                        </div>
+                        <AvailableRooms />
                     </div>
                 </div>
             </div >

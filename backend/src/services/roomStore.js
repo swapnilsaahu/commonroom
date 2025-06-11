@@ -37,6 +37,7 @@ const createOrGetRoomRedis = async (roomId, roomname, lastActivity) => {
     }
     catch (error) {
         console.error("error while creating room in db", error);
+        throw error;
     }
 
 };
@@ -59,33 +60,56 @@ const getRoom = async (roomId) => {
 //lastmessages is  string convert using json parse and then again converted to string
 const addUserToRoomRedis = async (roomId, username) => {
     try {
+        // Find user in database
         const userDocDB = await User.findOne({ username: username });
+        if (!userDocDB) {
+            throw new Error(`User ${username} not found in database`);
+        }
+
+        // Find room in database
+        const roomDocDB = await Rooms.findOne({ roomId: roomId });
+        if (!roomDocDB) {
+            throw new Error(`Room ${roomId} not found in database`);
+        }
+        // Add user to room in database (avoid duplicates with $addToSet)
         const addUserToRoomDB = await Rooms.findOneAndUpdate(
             { roomId: roomId },
-            { $addToSet: { users: userDocDB._id } },
+            {
+                $addToSet: { users: userDocDB._id }
+            },
             { new: true }
-        )
+        );
+
+        // Add room to user's rooms list
         await User.findOneAndUpdate(
             { username: username },
             { $addToSet: { rooms: addUserToRoomDB._id } },
             { new: true }
-        )
-        if (!addUserToRoomDB) {
-            console.error("unable to update the room with user in db", error);
-            return;
-        }
+        );
 
+        // Add user to Redis
         const client = getClient();
         const userListKey = `${getRoomKey(roomId)}:users`;
-        // If users doesnt exist
+
+        // Check if user already exists in Redis
         const userExists = await client.sIsMember(userListKey, username);
         if (!userExists) {
+            // Add user to Redis set
             await client.sAdd(userListKey, username);
+            // Increment user count
             await client.hIncrBy(getRoomKey(roomId), 'usercount', 1);
+            console.log(`User ${username} added to room ${roomId} in Redis`);
+        } else {
+            console.log(`User ${username} already exists in room ${roomId} in Redis`);
         }
+
+        // Update last activity
+        await client.hSet(getRoomKey(roomId), 'lastActivity', new Date().toISOString());
+
         return username;
     } catch (error) {
-        console.error("error while adding user to db", error);
+        console.error("Error while adding user to room:", error);
+        throw error; // Re-throw to handle in calling function
     }
 }
 //to get all users in a room
