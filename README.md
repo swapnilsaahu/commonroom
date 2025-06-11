@@ -86,8 +86,7 @@ VITE_WEBSOCKET_URL=ws://localhost:3000
 
 **Redis:**
 - Start Redis server at default port by redis 6379:
-```bash
-redis-server
+
 ```
 
 ##  Running the Application
