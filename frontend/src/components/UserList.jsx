@@ -6,17 +6,11 @@ const UserList = ({ roomId }) => {
     const { sendMessage, roomData } = useWSConnection();
     const { users, usersInARoomDB } = useAuth();
     const calledRef = useRef(false);
-    const getUsers = () => {
-        const msgObject = {
-            type: "getUsers",
-            roomId: roomId
-        }
-        sendMessage(msgObject);
-    }
+
     useEffect(() => {
         if (calledRef.current) return;
         calledRef.current = true;
-        getUsers();
+        usersInARoomDB(roomData?.roomId);
     }, []);
     return (
         <div className="w-1/5 p-4 border-l">

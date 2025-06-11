@@ -18,22 +18,30 @@ const AvailableRooms = () => {
     }, [username])
 
     return (
-        <div>
-            <h3 className="font-bold text-3xl p-2 ml-4">Available Rooms:</h3>
-            <div>
-                {rooms.map((room, index) => (
-                    <div key={index} onClick={() => handleClick(room)} className="">
-                        <div className="w-full text-white bg-black m-3 px-6 py-2 rounded-2xl cursor-pointer transform transition duration-300 hover:-translate-y-1 hover:shadow-lg ">
-                            <div className="font-bold text-2xl">
-                                {room.roomname}
+        <div className="px-4">
+            <h3 className="font-bold text-3xl mb-6 text-gray-800">Available Rooms</h3>
+
+            {rooms.length === 0 ? (
+                <div className="text-center text-gray-500 text-lg">
+                    No rooms available. Try creating one!
+                </div>
+            ) : (
+                <div className="space-y-4">
+                    {rooms.map((room, index) => (
+                        <div
+                            key={index}
+                            onClick={() => handleClick(room)}
+                            className="bg-black text-white px-6 py-4 rounded-2xl cursor-pointer hover:bg-gray-800 hover:shadow-xl transition transform hover:-translate-y-1"
+                        >
+                            <div className="font-semibold text-xl">
+                                {room?.roomname || "Unnamed Room"}
                             </div>
                         </div>
-                    </div>
-
-                ))}
-            </div>
+                    ))}
+                </div>
+            )}
         </div>
-    )
+    );
 }
 
 export default AvailableRooms;
