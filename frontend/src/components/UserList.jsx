@@ -8,10 +8,8 @@ const UserList = ({ roomId }) => {
     const calledRef = useRef(false);
 
     useEffect(() => {
-        if (calledRef.current) return;
-        calledRef.current = true;
         usersInARoomDB(roomData?.roomId);
-    }, []);
+    }, [roomData?.roomId]);
     return (
         <div className="w-1/5 p-4 border-l">
             <h2 className="text-lg font-bold text-black mb-4">Users:</h2>

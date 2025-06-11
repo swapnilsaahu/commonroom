@@ -36,7 +36,7 @@ const RoomInterface = () => {
         setCurrentMsg('');
     }
 
-    const getMessagesOnMount = () => {
+    const getMessagesOnMount = async () => {
         if (!roomData?.roomId || !username) {
             console.warn('Cannot get messages, missing roomId or username');
             return;
@@ -50,9 +50,9 @@ const RoomInterface = () => {
         sendMessage(msgObject);
     }
 
-    const handleReconnect = () => {
+    const handleReconnect = async () => {
         try {
-            const storedRoomData = JSON.parse(sessionStorage.getItem("roomData"));
+            const storedRoomData = await JSON.parse(sessionStorage.getItem("roomData"));
             const storedUsername = sessionStorage.getItem("username");
 
             if (storedRoomData && storedUsername) {
@@ -124,6 +124,9 @@ const RoomInterface = () => {
                             currentMessage={currentMessage}
                         />
                     </div>
+                </div>
+                <div className="bg-gray-50 text-black flex-[1] text-center ">
+                    <UserList roomId={roomData?.roomId} />
                 </div>
             </main >
         </div >

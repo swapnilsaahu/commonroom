@@ -5,8 +5,16 @@ import { useEffect } from "react";
 const AvailableRooms = () => {
     const navigate = useNavigate();
     const { username, roomsFromDB, rooms } = useAuth();
-    const { roomData, setroomData } = useWSConnection();
+    const { roomData, setroomData, sendMessage } = useWSConnection();
     const handleClick = async (room) => {
+        const msgObject = {
+            type: "join",
+            roomId: room.roomId,
+            roomname: room.roomname,
+            username: username
+
+        }
+        await sendMessage(msgObject);
         setroomData(room);
         sessionStorage.setItem('roomData', JSON.stringify(room));
         navigate('/room');

@@ -78,7 +78,7 @@ export const WSContextProvider = ({ children }) => {
             roomId: '',
             roomname: '',
         });
-        sessionStorage.removeItem("roomId");
+        sessionStorage.removeItem("roomData");
     }
     const value = {
         wsConnectionObject,

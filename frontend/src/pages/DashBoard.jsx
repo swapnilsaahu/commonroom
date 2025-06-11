@@ -18,21 +18,38 @@ const DashBoard = () => {
     useEffect(() => {
         clearRoom();
     }, [])
+
     return (
         <section>
             <AfterAuthNavBar />
-            <div className="h-screen bg-gray-50 text-black py-20" >
+            <div className="min-h-screen bg-gray-50 text-black py-20 px-4 flex items-center justify-center">
+                <div className="w-full max-w-md space-y-8 text-center">
 
-                <div className="flex text-black flex-col items-center justify-center gap-2">
-                    <div className="text-white rounded-2xl">
-                        <button type="button" className="bg-black text-2xl p-4 m-4 hover:bg-gray-600 " onClick={createRoomHandle}>Create Server</button>
-                        <button type="button" onClick={joinRoomHandle} className="bg-black text-2xl m-4 p-4 hover:bg-gray-600">Join server</button>
+                    <h1 className="text-3xl font-bold text-gray-800">Welcome to CommonRoom</h1>
+
+                    <div className="bg-white shadow-lg rounded-2xl p-8 space-y-4">
+                        <button
+                            type="button"
+                            className="w-full bg-black text-white text-xl py-3 rounded-lg hover:bg-gray-800 transition duration-300"
+                            onClick={createRoomHandle}
+                        >
+                            Create Server
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={joinRoomHandle}
+                            className="w-full bg-black text-white text-xl py-3 rounded-lg hover:bg-gray-800 transition duration-300"
+                        >
+                            Join Server
+                        </button>
                     </div>
-                    <div>
+
+                    <div className="mt-6">
                         <AvailableRooms />
                     </div>
                 </div>
-            </div >
+            </div>
         </section>
     )
 }

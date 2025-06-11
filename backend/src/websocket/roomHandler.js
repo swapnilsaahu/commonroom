@@ -185,6 +185,7 @@ const joinRoomMessage = async (ws, data, roomStore) => {
         const joinMessage = JSON.stringify({
             success: true,
             roomId: roomId,
+            roomname: roomname,
             type: "joined",
             username: username,
             usercount: roomStore[roomId].usercount,
