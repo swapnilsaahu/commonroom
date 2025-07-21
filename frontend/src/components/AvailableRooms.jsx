@@ -25,6 +25,7 @@ const AvailableRooms = () => {
         }
     }, [username])
 
+
     return (
         <div className="px-4">
             <h3 className="font-bold text-3xl mb-6 text-gray-800">Available Rooms</h3>
