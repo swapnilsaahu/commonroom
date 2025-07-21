@@ -2,7 +2,6 @@
 import { getClient } from "../db/client.js";
 import { getRoomKey } from "./roomStore.js";
 import { Message } from "../models/messageModel.js";
-
 const addMessage = async (roomId, message) => {
     const client = getClient();
     const messageListKey = `${getRoomKey(roomId)}:messages`;
@@ -57,8 +56,12 @@ const batchStoreMessageDB = async (roomId) => {
         }
 
         try {
+
             const savedMessages = await Message.insertMany(batch);
+
             console.log(`Saved batch of ${savedMessages.length} messages`);
+
+
             totalProcessed += savedMessages.length;
 
             // Clear processing key after successful save

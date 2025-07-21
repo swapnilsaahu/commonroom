@@ -16,11 +16,7 @@ const roomSchema = new mongoose.Schema({
     }],
     memberscount: {
         type: Number
-    },
-    messages: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Message'
-    }]
+    }
 }, { timestamp: true });
 
 roomSchema.pre('validate', function(next) {

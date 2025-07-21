@@ -9,7 +9,7 @@ const sendRoomMessage = async (ws, data, roomStore) => {
 
     console.log("inside sendRoomMessage");
     const clients = Object.values(roomStore[roomId].users);
-    console.log("why the hell this is not defined", clients);
+    //console.log("why the hell this is not defined", clients);
 
     console.log({
         success: true,
