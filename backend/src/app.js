@@ -4,8 +4,9 @@ import cors from "cors";
 import bodyParser from "body-parser";
 const app = express();
 
+const allowedOrigins = [`${process.env.ALLOWED_ORIGIN}`, `${process.env.ALLOWED2_ORIGIN}`]
 app.use(cors({
-    origin: `${process.env.ALLOWED_ORIGIN}`
+    origin: allowedOrigins
     ,
     credentials: true
 }));

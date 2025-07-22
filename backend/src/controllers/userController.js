@@ -95,8 +95,8 @@ const loginUser = asyncHandler(async (req, res) => {
     //set cookies in user browser cookies are better way to store jwt token both in cookies it can autmatically send the token here using secure false during development,sameSite lax indicates that it allows for cross site request so that cookies can be transferred btw differnt port 
     return res
         .status(200)
-        .cookie("accessToken", accessToken, { httpOnly: true, secure: false, sameSite: 'Lax' })
-        .cookie("refreshToken", refreshToken, { httpOnly: true, secure: false, sameSite: 'Lax' })
+        .cookie("accessToken", accessToken, { httpOnly: true, secure: true, sameSite: 'Lax' })
+        .cookie("refreshToken", refreshToken, { httpOnly: true, secure: true, sameSite: 'Lax' })
         .json(
             new ApiResponse(200, {
                 "username": username,
