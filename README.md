@@ -34,7 +34,7 @@ A full-stack real-time chat application that enables users to create private roo
 Before running this application, make sure you have the following installed:
 
 - **Node.js** (v14 or higher)
-- **npm** or **yarn**
+- **npm**
 - **MongoDB** (v4.0 or higher)
 - **Redis** (v6.0 or higher)
 
