@@ -1,0 +1,21 @@
+name: CD Pipeline
+
+on:
+  workflow_run:
+    workflow: ["CI Pipeline"]
+    types:
+      -completed
+
+jobs:
+  
+  build:
+    
+    runs-on: self-hosted
+
+    steps:
+      - name: Pull Docker Image
+        run: docker pull nydelagan/nodejs-backend-chatapp:latest
+      - name: Delete Old docker container
+        run: docker rm -f nodejs-backend-chatapp-container || true
+      - name: Run docker container
+        run: docker run -d -p 3000:3000 --env-file .env nydelagan/nodejs-backend-chatapp
