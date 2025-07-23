@@ -18,4 +18,4 @@ jobs:
       - name: Delete Old docker container
         run: docker rm -f nodejs-backend-chatapp-container || true
       - name: Run docker container
-        run: docker run -d -p 3000:3000 --env-file .env --name nodejs-backend-chatapp-container nydelagan/nodejs-backend-chatapp
+        run: docker run -d -p 3000:3000 --env-file /home/.env --name nodejs-backend-chatapp-container nydelagan/nodejs-backend-chatapp
