@@ -1,21 +1,23 @@
 name: CD Pipeline
-
 on:
   workflow_run:
     workflows: ["CI Pipeline"]
     types:
       - completed
     branches: [main]
+
 jobs:
-  
   build:
-    
     runs-on: self-hosted
     if: ${{ github.event.workflow_run.conclusion == 'success'}}
     steps:
-      - name: Pull Docker Image
-        run: docker pull nydelagan/nodejs-backend-chatapp:latest
-      - name: Delete Old docker container
-        run: docker rm -f nodejs-backend-chatapp-container || true
-      - name: Run docker container
-        run: docker run -d -p 3000:3000 --env-file /home/.env --name nodejs-backend-chatapp-container nydelagan/nodejs-backend-chatapp
+      - name: Debug - Find .env file
+        run: |
+          echo "Current user: $(whoami)"
+          echo "Home directory: $HOME"
+          echo "Current working directory: $(pwd)"
+          echo "Looking for .env files:"
+          find $HOME -name ".env" 2>/dev/null || echo "No .env found in home directory"
+          find /home -name ".env" 2>/dev/null || echo "No .env found in /home"
+          ls -la $HOME/.env 2>/dev/null || echo "No .env in $HOME"
+          ls -la ~/.env 2>/dev/null || echo "No .env in ~"
