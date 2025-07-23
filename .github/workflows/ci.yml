@@ -1,15 +1,10 @@
 name: Docker Image CI
-
 on:
   push:
     branches: [ "main" ]
-
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4
     - name: Login DockerHub
@@ -19,6 +14,7 @@ jobs:
       run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
       
     - name: Build the Docker image
-      run: docker build -t nodejs-backend-chatapp .
+      run: docker build -t $DOCKER_USERNAME/nodejs-backend-chatapp:latest ./backend
+    
     - name: Push to dockerhub
       run: docker push $DOCKER_USERNAME/nodejs-backend-chatapp:latest
