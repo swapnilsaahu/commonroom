@@ -4,18 +4,18 @@ on:
   workflow_run:
     workflows: ["CI Pipeline"]
     types:
-      -completed
-
+      - completed
+    branches: [main]
 jobs:
   
   build:
     
     runs-on: self-hosted
-
+    if: ${{ github.event.workflow_run.conclusion = 'success'}}
     steps:
       - name: Pull Docker Image
         run: docker pull nydelagan/nodejs-backend-chatapp:latest
       - name: Delete Old docker container
         run: docker rm -f nodejs-backend-chatapp-container || true
       - name: Run docker container
-        run: docker run -d -p 3000:3000 --env-file .env nydelagan/nodejs-backend-chatapp
+        run: docker run -d -p 3000:3000 --env-file .env --name nodejs-backend-chatapp-container nydelagan/nodejs-backend-chatapp
