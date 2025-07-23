@@ -1,4 +1,4 @@
-# CommonRoom
+# commonroom
 
 A full-stack real-time chat application that enables users to create private rooms, join existing rooms, and communicate instantly through secure WebSocket connections.
 
