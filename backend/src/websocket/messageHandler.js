@@ -1,4 +1,6 @@
 import { addMessage, getLastNMessages, batchStoreMessageDB } from "../services/messageStore.js";
+import { Message } from "../models/messageModel.js";
+
 const sendRoomMessage = async (ws, data, roomStore) => {
     const { message, roomId, username, timestamp, id } = data;
     const result = await addMessage(roomId, data);

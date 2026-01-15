@@ -4,12 +4,12 @@ import cors from "cors";
 import bodyParser from "body-parser";
 const app = express();
 
-const allowedOrigins = [`${process.env.ALLOWED_ORIGIN}`, `${process.env.ALLOWED2_ORIGIN}`]
-app.use(cors({
-    origin: allowedOrigins
-    ,
-    credentials: true
-}));
+app.use(
+    cors({
+        origin: true, // Allow all origins
+        credentials: true, // Allow cookies/auth headers
+    })
+);
 app.use(bodyParser.json());
 app.use(express.json()); //can use limit to limit the filesize for the recivable from user
 app.use(express.urlencoded({ extended: true }));
@@ -17,10 +17,6 @@ app.use(express.static("public"));
 app.use(cookieParser());
 
 
-//app.use((req, res, next) => {
-//    console.log("BODY MIDDLEWARE CHECK:", req.method, req.url, req.headers['content-type']);
-//   next();
-//});
 //routes import
 import userRouter from "./routes/userRoutes.js"
 import roomRouter from "./routes/roomRoutes.js";

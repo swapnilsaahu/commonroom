@@ -1,6 +1,6 @@
 import {
-    addUserToRoomRedis,
-    createOrGetRoomRedis,
+    addUserToRoom,
+    createOrGetRoom,
     getRoom,
     getUsersInRoom,
 } from "../services/roomStore.js";
@@ -54,7 +54,7 @@ const createRoom = async (roomStore, roomId, roomname, username) => {
             };
         }
         console.log(roomStore);
-        const res = await createOrGetRoomRedis(roomId, roomname, lastActivity, username);
+        const res = await createOrGetRoom(roomId, roomname, lastActivity);
         return res;
     } catch (error) {
         console.error("Error in createRoom:", error);
@@ -62,7 +62,7 @@ const createRoom = async (roomStore, roomId, roomname, username) => {
     }
 };
 
-const addUserToRoom = async (roomStore, roomId, roomname, username, ws) => {
+const addUserToRoomInMemory = async (roomStore, roomId, roomname, username, ws) => {
     try {
         // If room doesn't exist, create it
         if (!roomStore[roomId]) {
@@ -90,10 +90,10 @@ const addUserToRoom = async (roomStore, roomId, roomname, username, ws) => {
         roomStore[roomId].usercount = userCount;
         roomStore[roomId].lastActivity = new Date().toISOString();
 
-        // Only store username and metadata in Redis/DB (NOT the WebSocket object)
-        const res = await addUserToRoomRedis(roomId, username);
+        // Only store username and metadata in MongoDB (NOT the WebSocket object)
+        const res = await addUserToRoom(roomId, username);
 
-        // Return the username instead of the Redis response for consistency
+        // Return the username for consistency
         return username;
     } catch (error) {
         console.error("Error in addUserToRoom:", error);
@@ -113,7 +113,7 @@ const createRoomMessage = async (ws, data, roomStore) => {
         const roomId = getId(roomStore);
 
         const resRoomId = await createRoom(roomStore, roomId, roomname, username);
-        const resUsername = await addUserToRoom(roomStore, roomId, roomname, username, ws);
+        const resUsername = await addUserToRoomInMemory(roomStore, roomId, roomname, username, ws);
 
         console.log(roomStore);
         console.log(`Creator ${resUsername} created roomID ${resRoomId}`);
@@ -147,7 +147,7 @@ const joinRoomMessage = async (ws, data, roomStore) => {
             return;
         }
 
-        // Check if room exists in memory, Redis, or database
+        // Check if room exists in memory or database
         let roomExists = false;
         let roomname = null;
 
@@ -155,13 +155,13 @@ const joinRoomMessage = async (ws, data, roomStore) => {
             roomExists = true;
             roomname = roomStore[roomId].roomname;
         } else {
-            // Check Redis first
-            const redisRoom = await getRoom(roomId);
-            if (redisRoom) {
+            // Check database
+            const dbRoom = await getRoom(roomId);
+            if (dbRoom) {
                 roomExists = true;
-                roomname = redisRoom.roomname;
+                roomname = dbRoom.roomname;
             } else {
-                // Check database as fallback
+                // Also check Rooms model directly as fallback
                 const roomExistsInDB = await Rooms.findOne({ roomId: roomId });
                 if (roomExistsInDB) {
                     roomExists = true;
@@ -175,7 +175,7 @@ const joinRoomMessage = async (ws, data, roomStore) => {
             return;
         }
 
-        const resUsername = await addUserToRoom(roomStore, roomId, roomname, username, ws);
+        const resUsername = await addUserToRoomInMemory(roomStore, roomId, roomname, username, ws);
         if (resUsername) {
             console.log(`${resUsername} joined the room with id: ${roomId}`);
         }
@@ -258,15 +258,16 @@ const reconnectRoom = async (ws, data, roomStore) => {
             return;
         }
 
-        // Get room info from Redis or database
+        // Get room info from database
         let roomname = null;
-        const redisRoom = await getRoom(roomId);
-        if (redisRoom) {
-            roomname = redisRoom.roomname;
+        const dbRoom = await getRoom(roomId);
+        if (dbRoom) {
+            roomname = dbRoom.roomname;
         } else {
-            const dbRoom = await Rooms.findOne({ roomId: roomId });
-            if (dbRoom) {
-                roomname = dbRoom.roomname;
+            // Also check Rooms model directly as fallback
+            const roomExistsInDB = await Rooms.findOne({ roomId: roomId });
+            if (roomExistsInDB) {
+                roomname = roomExistsInDB.roomname;
             } else {
                 ws.close(1008, "Room does not exist");
                 return;
@@ -278,7 +279,7 @@ const reconnectRoom = async (ws, data, roomStore) => {
             await createRoom(roomStore, roomId, roomname, username);
         }
 
-        const resUsername = await addUserToRoom(roomStore, roomId, roomname, username, ws);
+        const resUsername = await addUserToRoomInMemory(roomStore, roomId, roomname, username, ws);
         console.log(`${resUsername} reconnected to room ${roomId}`);
 
         // Notify all users in the room

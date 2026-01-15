@@ -16,7 +16,8 @@ const messageSchema = new mongoose.Schema({
     },
     timestamp: {
         type: Number,
-        required: true
+        required: true,
+        index: true
     },
     message: {
         type: String
@@ -24,7 +25,9 @@ const messageSchema = new mongoose.Schema({
     profiepic: {
         type: String
     }
+}, { timestamps: true });
 
-})
+// Compound index for efficient queries by roomId and timestamp
+messageSchema.index({ roomId: 1, timestamp: -1 });
 
 export const Message = mongoose.model("Message", messageSchema);

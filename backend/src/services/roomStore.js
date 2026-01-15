@@ -1,81 +1,95 @@
-import { getClient } from "../db/client.js";
 import { Rooms } from "../models/roomsModel.js";
 import { User } from "../models/userModelDB.js"
-const getRoomKey = (roomId) => {
-    return `room:${roomId}`;
-}
 
-const createOrGetRoomRedis = async (roomId, roomname, lastActivity) => {
-
+/**
+ * @param {string} roomId - 
+ * @param {string} roomname - Name of the room
+ * @param {string} lastActivity 
+ * @returns {Promise<Object>} Room object with roomname, usercount, and lastActivity
+ */
+const createOrGetRoom = async (roomId, roomname, lastActivity) => {
     try {
-        //already checked if room exists or not, now save the room for persistence in db
-        const roomExistsInDB = await Rooms.findOne({ roomId: roomId });
-        if (!roomExistsInDB) {
-            const isRoomCreated = await Rooms.create({
+        // Check if room exists in database
+        let room = await Rooms.findOne({ roomId: roomId });
+        
+        if (!room) {
+            // Create new room
+            room = await Rooms.create({
                 roomId: roomId,
                 roomname: roomname,
-                memberscount: 0
-            })
-            console.log("room created successfulllllllly", isRoomCreated);
-        }
-        const client = getClient();
-        const roomKey = getRoomKey(roomId);
-        const roomExists = await client.exists(roomKey);
-        //console.log("inside createOrGetRoomRedis", roomId, roomname);
-        if (roomExists) {
-            return await getRoom(roomId);
-        }
-        else {
-            await client.hSet(roomKey, {
-                roomname: roomname || roomExistsInDB.roomname,
-                usercount: '0',
-                lastActivity: lastActivity
+                memberscount: 0,
+                activeUsers: [],
+                lastActivity: lastActivity || new Date()
             });
-            await client.expire(roomKey, 24 * 60 * 60);
+            console.log("Room created successfully:", room.roomId);
+        } else {
+            // Update last activity if provided
+            if (lastActivity) {
+                room.lastActivity = new Date(lastActivity);
+                await room.save();
+            }
         }
-        return await getRoom(roomId);
-    }
-    catch (error) {
-        console.error("error while creating room in db", error);
+
+        return {
+            roomname: room.roomname,
+            usercount: room.activeUsers ? room.activeUsers.length : 0,
+            lastActivity: room.lastActivity ? room.lastActivity.toISOString() : new Date().toISOString()
+        };
+    } catch (error) {
+        console.error("Error while creating/getting room in DB:", error);
         throw error;
     }
-
 };
 
+/**
+ * @param {string} roomId 
+ * @returns {Promise<Object|null>} 
+ */
 const getRoom = async (roomId) => {
-    const client = getClient();
-    const roomKey = getRoomKey(roomId);
-    const data = await client.hGetAll(roomKey);
+    try {
+        const room = await Rooms.findOne({ roomId: roomId });
+        
+        if (!room) {
+            return null;
+        }
 
-    if (Object.keys(data).length === 0) return null;
-
-    return {
-        roomname: data.roomname,
-        usercount: parseInt(data.usercount) || 0,
-        lastActivity: data.lastActivity
+        return {
+            roomname: room.roomname,
+            usercount: room.activeUsers ? room.activeUsers.length : 0,
+            lastActivity: room.lastActivity ? room.lastActivity.toISOString() : new Date().toISOString()
+        };
+    } catch (error) {
+        console.error("Error while getting room:", error);
+        throw error;
     }
 };
-//add users to room, redis only supports string,binary data no array or object so thats
-//why usercount is stored as string and 
-//lastmessages is  string convert using json parse and then again converted to string
-const addUserToRoomRedis = async (roomId, username) => {
+
+/**
+ * @param {string} roomId 
+ * @param {string} username -
+ * @returns {Promise<string>} Username that was added
+ */
+const addUserToRoom = async (roomId, username) => {
     try {
-        // Find user in database
         const userDocDB = await User.findOne({ username: username });
         if (!userDocDB) {
             throw new Error(`User ${username} not found in database`);
         }
 
-        // Find room in database
         const roomDocDB = await Rooms.findOne({ roomId: roomId });
         if (!roomDocDB) {
             throw new Error(`Room ${roomId} not found in database`);
         }
-        // Add user to room in database (avoid duplicates with $addToSet)
-        const addUserToRoomDB = await Rooms.findOneAndUpdate(
+
+        // Add user to room's users array
+        const updatedRoom = await Rooms.findOneAndUpdate(
             { roomId: roomId },
             {
-                $addToSet: { users: userDocDB._id }
+                $addToSet: { 
+                    users: userDocDB._id,
+                    activeUsers: username
+                },
+                $set: { lastActivity: new Date() }
             },
             { new: true }
         );
@@ -83,67 +97,69 @@ const addUserToRoomRedis = async (roomId, username) => {
         // Add room to user's rooms list
         await User.findOneAndUpdate(
             { username: username },
-            { $addToSet: { rooms: addUserToRoomDB._id } },
+            { $addToSet: { rooms: updatedRoom._id } },
             { new: true }
         );
 
-        // Add user to Redis
-        const client = getClient();
-        const userListKey = `${getRoomKey(roomId)}:users`;
-
-        // Check if user already exists in Redis
-        const userExists = await client.sIsMember(userListKey, username);
-        if (!userExists) {
-            // Add user to Redis set
-            await client.sAdd(userListKey, username);
-            // Increment user count
-            await client.hIncrBy(getRoomKey(roomId), 'usercount', 1);
-            console.log(`User ${username} added to room ${roomId} in Redis`);
-        } else {
-            console.log(`User ${username} already exists in room ${roomId} in Redis`);
-        }
-
-        // Update last activity
-        await client.hSet(getRoomKey(roomId), 'lastActivity', new Date().toISOString());
-
+        console.log(`User ${username} added to room ${roomId}`);
         return username;
     } catch (error) {
         console.error("Error while adding user to room:", error);
-        throw error; // Re-throw to handle in calling function
+        throw error;
     }
-}
-//to get all users in a room
-const getUsersInRoom = async (roomId) => {
-    const client = getClient();
-    const userListKey = `${getRoomKey(roomId)}:users`;
-    return await client.sMembers(userListKey);
-}
+};
 
+/**
+ * @param {string} roomId - Unique room identifier
+ * @returns {Promise<Array<string>>} Array of usernames
+ */
+const getUsersInRoom = async (roomId) => {
+    try {
+        const room = await Rooms.findOne({ roomId: roomId }).select('activeUsers');
+        return room && room.activeUsers ? room.activeUsers : [];
+    } catch (error) {
+        console.error("Error while getting users in room:", error);
+        throw error;
+    }
+};
+
+/**
+ * @param {string} roomId - Unique room identifier
+ * @param {string} username - Username to remove
+ * @returns {Promise<void>}
+ */
 const removeUserInRoom = async (roomId, username) => {
     try {
-        const client = getClient();
-        const userListKey = `${getRoomKey(roomId)}:users`;
-        const userExists = await client.sIsMember(userListKey, username);
-        if (userExists) {
-            const userRemoved = await client.sRem(userListKey, username);
-            await client.hIncrBy(getRoomKey(roomId), 'usercount', -1);
-            console.log("user removed", userRemoved);
+        const room = await Rooms.findOne({ roomId: roomId });
+        
+        if (!room) {
+            console.log(`Room ${roomId} not found`);
+            return;
         }
-        else {
-            console.log(`${username} doesnt exists`);
-        }
-        return;
 
+        // Check if user exists in activeUsers
+        if (room.activeUsers && room.activeUsers.includes(username)) {
+            await Rooms.findOneAndUpdate(
+                { roomId: roomId },
+                {
+                    $pull: { activeUsers: username },
+                    $set: { lastActivity: new Date() }
+                }
+            );
+            console.log(`User ${username} removed from room ${roomId}`);
+        } else {
+            console.log(`User ${username} doesn't exist in room ${roomId}`);
+        }
     } catch (error) {
-        console.error("error while removing user", error);
+        console.error("Error while removing user:", error);
+        throw error;
     }
-}
+};
 
 export {
-    getRoomKey,
-    createOrGetRoomRedis,
+    createOrGetRoom,
     getRoom,
-    addUserToRoomRedis,
+    addUserToRoom,
     getUsersInRoom,
     removeUserInRoom
 }
