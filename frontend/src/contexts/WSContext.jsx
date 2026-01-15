@@ -19,52 +19,71 @@ export const WSContextProvider = ({ children }) => {
 
 
     useEffect(() => {
-
-        const ws = new WebSocket(import.meta.env.VITE_WEBSOCKET_URL);
+        const ws = new WebSocket("ws://localhost:3000");
         setWSConnectionObject(ws);
 
         ws.onopen = () => {
-            console.log("Connected");
-            console.log(ws);
+            console.log("WebSocket Connected");
         }
+
         ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            console.log(data);
-            const { type } = data;
-            console.log(type);
-            switch (type) {
-                case 'created':
-                    setroomData(data);
-                    sessionStorage.setItem('roomData', JSON.stringify(data));
-                    console.log("inside created wscontext", sessionStorage.getItem('roomData'));
-                    break;
-                case 'joined': {
-                    setroomData(data);
-                    sessionStorage.setItem('roomData', JSON.stringify(data));
-                    break;
-                }
-                case 'onmessage':
-                    setRoomMessages((prevMessages) => [...prevMessages, data]);
-                    break;
-                case 'onMountMessages':
-                    if (data.message && Array.isArray(data.message)) {
-                        setRoomMessages(data.message);
+            try {
+                const data = JSON.parse(event.data);
+                console.log("WebSocket message received:", data);
+                const { type } = data;
+                
+                switch (type) {
+                    case 'created':
+                        setroomData(data);
+                        sessionStorage.setItem('roomData', JSON.stringify(data));
+                        break;
+                    case 'joined': {
+                        setroomData(data);
+                        sessionStorage.setItem('roomData', JSON.stringify(data));
+                        break;
                     }
-                    break;
-                case 'reconnect':
-                    setroomData(data);
-                    sessionStorage.setItem('roomData', JSON.stringify(data));
-                    console.log("inside reconnect wscontext", sessionStorage.getItem("roomData"))
-                    break;
-                default:
-                    setroomData(data);
+                    case 'onmessage':
+                        setRoomMessages((prevMessages) => [...prevMessages, data]);
+                        break;
+                    case 'onMountMessages':
+                        if (data.message && Array.isArray(data.message)) {
+                            setRoomMessages(data.message);
+                        }
+                        break;
+                    case 'olderMessages':
+                        if (data.messages && Array.isArray(data.messages)) {
+                            setRoomMessages((prevMessages) => [...data.messages, ...prevMessages]);
+                        }
+                        break;
+                    case 'reconnect':
+                        setroomData(data);
+                        sessionStorage.setItem('roomData', JSON.stringify(data));
+                        break;
+                    case 'getUsersInRoom':
+                        // Handle user list updates if needed
+                        break;
+                    default:
+                        setroomData(data);
+                }
+            } catch (error) {
+                console.error("Error parsing WebSocket message:", error);
             }
         }
 
         ws.onerror = (error) => {
-            console.error("Error connecting to WS", error);
+            console.error("WebSocket error:", error);
         };
 
+        ws.onclose = (event) => {
+            console.log("WebSocket closed:", event.code, event.reason);
+        }
+
+        // Cleanup function to close WebSocket on unmount
+        return () => {
+            if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+                ws.close();
+            }
+        };
     }, []);
 
     const sendMessage = (msg) => {

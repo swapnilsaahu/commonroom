@@ -4,8 +4,7 @@ const signupFetch = async (userData) => {
     try {
         console.log(userData);
         //JSON.stringify(userData);
-        const response = axiosApi.post(`${import.meta.env.VITE_API_BASE_URL}/api/v1/users/register`, userData,);
-        console.log(response.data);
+        const response = await axiosApi.post(`/api/v1/users/register`, userData);
         return response.data;
     }
     catch (err) {
@@ -17,8 +16,7 @@ const loginFetchApi = async ({ username, password }) => {
     try {
 
         console.log(username, ": username");
-        const response = await axiosApi.post(`${import.meta.env.VITE_API_BASE_URL}/api/v1/users/login`, { username, password });
-        console.log(response.data);
+        const response = await axiosApi.post(`/api/v1/users/login`, { username, password });
         return response.data;
     } catch (error) {
         console.log("there was error while logging in", error);
@@ -28,7 +26,7 @@ const loginFetchApi = async ({ username, password }) => {
 
 const checkAuthApi = async () => {
     try {
-        const reponse = await axiosApi.get(`${import.meta.env.VITE_API_BASE_URL}/api/v1/users/verify`);
+        const reponse = await axiosApi.get(`/api/v1/users/verify`);
         return reponse.data;
     } catch (error) {
         console.error("error while doing authcheck", error);
@@ -37,7 +35,7 @@ const checkAuthApi = async () => {
 
 const getRoomsApi = async (username) => {
     try {
-        const res = await axiosApi.get(`${import.meta.env.VITE_API_BASE_URL}/api/v1/users/rooms?username=${encodeURIComponent(username)}`);
+        const res = await axiosApi.get(`/api/v1/users/rooms?username=${encodeURIComponent(username)}`);
         return res.data;
     }
     catch (error) {
@@ -47,7 +45,7 @@ const getRoomsApi = async (username) => {
 
 const getUsersApi = async (roomId) => {
     try {
-        const res = await axiosApi.get(`${import.meta.env.VITE_API_BASE_URL}/api/v1/room/users?roomId=${encodeURIComponent(roomId)}`);
+        const res = await axiosApi.get(`/api/v1/room/users?roomId=${encodeURIComponent(roomId)}`);
         return res.data;
     } catch (error) {
         console.error("error while fetching users", error);

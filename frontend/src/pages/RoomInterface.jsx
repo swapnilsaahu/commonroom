@@ -14,14 +14,17 @@ const RoomInterface = () => {
     const { username, setUsername } = useAuth();
     const calledRef = useRef(false);
     const messagesEndRef = useRef(null);
-    const containerRef = useRef(null);
-    const previousScrollHeightRef = useRef(0);
 
     const setMessageValue = (value) => {
         setCurrentMsg(value);
     }
 
     const handleSendMessage = () => {
+        if (!roomData?.roomId || !username || !currentMessage.trim()) {
+            console.warn('Cannot send message: missing required data');
+            return;
+        }
+
         const msgObject = {
             type: "sendMessage",
             roomId: roomData.roomId,
@@ -50,17 +53,17 @@ const RoomInterface = () => {
         sendMessage(msgObject);
     }
 
-    const handleReconnect = async () => {
+    const handleReconnect = () => {
         try {
-            const storedRoomData = await JSON.parse(sessionStorage.getItem("roomData"));
+            const storedRoomDataStr = sessionStorage.getItem("roomData");
             const storedUsername = sessionStorage.getItem("username");
 
-            if (storedRoomData && storedUsername) {
+            if (storedRoomDataStr && storedUsername) {
+                const storedRoomData = JSON.parse(storedRoomDataStr);
                 setroomData(storedRoomData);
                 setUsername(storedUsername);
-
             } else {
-                console.warn(' No stored data found in sessionStorage');
+                console.warn('No stored data found in sessionStorage');
             }
         } catch (error) {
             console.error('Error in handleReconnect:', error);
