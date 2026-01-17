@@ -6,7 +6,7 @@ const app = express();
 
 app.use(
     cors({
-        origin: true, // Allow all origins
+        origin: ["https://commonroom-pi.vercel.app", "https://localhost:5173"],
         credentials: true, // Allow cookies/auth headers
     })
 );
