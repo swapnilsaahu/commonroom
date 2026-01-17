@@ -19,7 +19,7 @@ export const WSContextProvider = ({ children }) => {
 
 
     useEffect(() => {
-        const ws = new WebSocket("ws://localhost:3000");
+        const ws = new WebSocket(import.meta.env.VITE_WEBSOCKET_URL);
         setWSConnectionObject(ws);
 
         ws.onopen = () => {
@@ -31,7 +31,7 @@ export const WSContextProvider = ({ children }) => {
                 const data = JSON.parse(event.data);
                 console.log("WebSocket message received:", data);
                 const { type } = data;
-                
+
                 switch (type) {
                     case 'created':
                         setroomData(data);
