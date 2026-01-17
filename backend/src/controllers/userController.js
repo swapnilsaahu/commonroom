@@ -96,8 +96,8 @@ const loginUser = asyncHandler(async (req, res) => {
     const isProd = process.env.NODE_ENV === "production";
     return res
         .status(200)
-        .cookie("accessToken", accessToken, { httpOnly: true, secure: isProd, sameSite: "Lax" })
-        .cookie("refreshToken", refreshToken, { httpOnly: true, secure: isProd, sameSite: "Lax" })
+        .cookie("accessToken", accessToken, { httpOnly: true, secure: isProd, sameSite: "none" })
+        .cookie("refreshToken", refreshToken, { httpOnly: true, secure: isProd, sameSite: "none" })
         .json(
             new ApiResponse(200, {
                 "username": username,
